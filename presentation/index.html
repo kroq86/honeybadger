@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vmbench | A System That Shows Its Work</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css" id="theme">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section class="title-slide">
+        <div class="hero">
+          <div>
+            <div class="eyebrow">Not magic. It shows what it is doing.</div>
+            <h1>vmbench<br><span>A System That Shows Its Work</span></h1>
+            <div class="deck-actions">
+              <a class="deck-button primary" href="../">Open live demo</a>
+              <a class="deck-button" href="https://github.com/kroq86/honeybadger">Open GitHub</a>
+            </div>
+            <p class="subtitle">
+              Formal VM benchmark + inspectable runtime:
+              pure-neural multi-step execution was weak here, but verifier-guided search under bounded compute became strong, visible, and useful.
+            </p>
+            <p class="subnote">
+              In academic language, this sits near <code>test-time scaling</code>, <code>verifier-guided search</code>,
+              <code>compute-efficient reasoning</code>, and <code>search-time compute</code>.
+            </p>
+          </div>
+          <div class="hero-panel">
+            <div class="vector-line">candidate generation -&gt; ranking -&gt; verification -&gt; budgeted search</div>
+            <div class="mini-grid">
+              <div class="mini-cell">
+                <span>old dream</span>
+                <strong>the model figures it all out alone</strong>
+              </div>
+              <div class="mini-cell">
+                <span>what actually helped</span>
+                <strong>try options, check them, pick better ones first</strong>
+              </div>
+              <div class="mini-cell">
+                <span>user sees</span>
+                <strong>why one option won</strong>
+              </div>
+              <div class="mini-cell">
+                <span>product idea</span>
+                <strong>a tool that explains itself</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          Start with the honest framing.
+          We did not get a clean “latent symbolic executor emerged in the weights” story.
+          What we got instead is more grounded and more demoable:
+          a reasoning runtime where users can inspect branch choice, verification status, budget usage, and failure modes.
+          <br><br><strong>Transition:</strong> show the actual experimental fork in the road.
+        </aside>
+      </section>
+
+      <section>
+        <h2>What We Learned</h2>
+        <div class="grid-2">
+          <div class="card">
+            <div class="label bad">What did not work well enough</div>
+            <ul>
+              <li>The model could sometimes do one simple step, but not a whole chain reliably</li>
+              <li>Training it more was not the miracle fix</li>
+              <li>Some smaller test numbers looked better than the real outcome</li>
+              <li>So “just trust the model” was not enough</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="label good">What started helping</div>
+            <ul>
+              <li>Make a short list of possible next moves</li>
+              <li>Use a checker to test whether each move is valid</li>
+              <li>Try the better-looking moves first</li>
+              <li>Stop once a time or effort limit is reached</li>
+            </ul>
+          </div>
+        </div>
+        <div class="section-note">
+          So the project changed direction. Instead of hidden “thinking”, it became visible step-by-step problem solving.
+          The central thesis is simple: <strong>pure-neural multi-step execution was weak on this setup</strong>,
+          while <strong>verifier-guided search with ranking was strong and inspectable under bounded compute</strong>.
+        </div>
+        <aside class="notes">
+          This is the turning point of the project narrative.
+          We should not oversell single-step.
+          Single-step was useful as scaffolding, but not as the final proof.
+          The thing that actually became strong was explicit search with verification and ranking.
+          <br><br><strong>Transition:</strong> now show the concrete metric shift when search enters the picture.
+        </aside>
+      </section>
+
+      <section class="dense-slide">
+        <h2>Why We Took It Seriously</h2>
+        <div class="metric-strip">
+          <div class="metric-card">
+            <span>same task</span>
+            <strong>0.3548</strong>
+            <em>success rate when the system tries options in a bad order</em>
+          </div>
+          <div class="metric-card highlight">
+            <span>same task</span>
+            <strong>0.9677</strong>
+            <em>success rate when a ranked policy is used (heuristic or learned)</em>
+          </div>
+          <div class="metric-card">
+            <span>harder task</span>
+            <strong>0.9911</strong>
+            <em>success rate on a harder set</em>
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="card compact-card">
+            <h3>Bad order</h3>
+            <p><strong>success</strong> 35%</p>
+            <p><strong>work spent</strong> high</p>
+            <p><strong>main problem</strong> it wastes effort on weak options</p>
+          </div>
+          <div class="card compact-card">
+            <h3>Hand-made order</h3>
+            <p><strong>success</strong> 97%</p>
+            <p><strong>work spent</strong> much lower</p>
+            <p><strong>harder task</strong> 94%</p>
+          </div>
+          <div class="card compact-card">
+            <h3>Learned order</h3>
+            <p><strong>success</strong> 97%</p>
+            <p><strong>work spent</strong> lowest</p>
+            <p><strong>harder task</strong> 99%</p>
+          </div>
+        </div>
+        <div class="section-note">
+          These numbers are from the stated splits; full reporting would give variability across runs and compute used.
+          This is why current papers talk so much about <strong>test-time scaling</strong>:
+          extra compute at decision time can matter as much as training.
+        </div>
+        <aside class="notes">
+          The critical message is that search control mattered much more than pure next-step generation quality.
+          No-ranker spends budget badly.
+          Heuristic and learned ranking both massively improve efficiency.
+          Learned becomes especially interesting on the harder split, where it slightly outperforms heuristic.
+          <br><br><strong>Transition:</strong> metrics alone are not enough, because the interesting part is the user experience they enable.
+        </aside>
+      </section>
+
+      <section>
+        <h2>What A Person Can Actually See</h2>
+        <div class="visual-grid">
+          <div class="visual-card">
+            <div class="big-step">1</div>
+            <h3>See the options</h3>
+            <p>Instead of one hidden answer, you can see the choices.</p>
+          </div>
+          <div class="visual-card">
+            <div class="big-step">2</div>
+            <h3>Control the effort</h3>
+            <p>You can change how much work the system is allowed to spend.</p>
+          </div>
+          <div class="visual-card">
+            <div class="big-step">3</div>
+            <h3>Understand mistakes</h3>
+            <p>When it fails, it says why instead of hiding the miss.</p>
+          </div>
+        </div>
+        <div class="section-note">
+          This is the whole point: the process is visible.
+          More formally, the user is seeing a small <strong>verifier-guided search</strong> loop instead of one opaque generation.
+          Public shape: <strong>MCP-first</strong> runtime, <strong>CLI-second</strong> benchmark surface.
+        </div>
+        <aside class="notes">
+          This is the core product framing.
+          The deck should make clear that the novelty is not “the model feels smart”.
+          The novelty is that reasoning is inspectable and therefore operationally useful.
+          <br><br><strong>Transition:</strong> now show the runtime itself on real payload.
+        </aside>
+      </section>
+
+      <section class="runtime-slide dense-slide">
+        <h2>Live Demo</h2>
+        <div class="demo-shell">
+          <div class="demo-controls">
+            <label>
+              Example
+              <select id="runtime-scenario"></select>
+            </label>
+            <label>
+              Effort limit
+              <input id="runtime-budget" type="range" min="0" max="0" step="1" value="0">
+            </label>
+          </div>
+          <div class="demo-layout">
+            <div class="side-panel">
+              <div id="runtime-meta" class="meta-box">Loading runtime payload…</div>
+              <div id="runtime-winner" class="winner-panel"></div>
+              <div id="runtime-policy-grid" class="policy-grid"></div>
+            </div>
+            <div class="plot-panel">
+              <div id="runtime-budget-chart" class="plot-box short"></div>
+              <div id="runtime-detail" class="detail-box"></div>
+            </div>
+          </div>
+          <div class="section-note">
+            This slide uses the same real data as the public demo. It is not fake sample text.
+          You can think of it as a product surface for <strong>budgeted search</strong>,
+          <strong>candidate ranking</strong>, and <strong>step verification</strong>.
+          </div>
+        </div>
+        <aside class="notes">
+          Walk this slide slowly.
+        Pick one scenario, move the budget, and show that no-ranker can need much more search on these examples.
+        Then point at the checked panel and say: this is what the user sees now, candidate ranking plus verification, not a black-box answer.
+          <br><br><strong>Transition:</strong> now make the system architecture behind this explicit.
+        </aside>
+      </section>
+
+      <section class="dense-slide">
+        <h2>How It Works</h2>
+        <div class="pipeline wide">
+          <span class="step active" data-stage>make options</span>
+          <span class="arrow">→</span>
+          <span class="step active" data-stage>sort them</span>
+          <span class="arrow">→</span>
+          <span class="step active" data-stage>check them</span>
+          <span class="arrow">→</span>
+          <span class="step active" data-stage>keep trying</span>
+          <span class="arrow">→</span>
+          <span class="step active" data-stage>show the result</span>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Inside</h3>
+            <ul>
+              <li>make a short list of possible next steps</li>
+              <li>rank the list</li>
+              <li>check whether each step is valid</li>
+              <li>keep searching until budget runs out</li>
+            </ul>
+            <p class="section-note">
+              Formal names: <strong>candidate generation</strong>, <strong>branch ranking</strong>,
+              <strong>verification granularity</strong>, and <strong>compute-bounded search</strong>.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Outside</h3>
+            <ul>
+              <li>see the checked option shown here</li>
+              <li>change the effort limit</li>
+              <li>see the path taken</li>
+              <li>see why it failed</li>
+            </ul>
+          </div>
+        </div>
+        <div class="section-note">
+          One active research question is <strong>optimal verification granularity</strong>:
+          how often you should check intermediate steps under a fixed compute budget.
+        </div>
+        <aside class="notes">
+          The nice thing here is that the research stack and the product stack line up.
+          The same components measured in the experiments are the components exposed in MCP.
+          That makes the deck feel grounded instead of speculative.
+          <br><br><strong>Transition:</strong> but we also need to be honest about what still does not hold up.
+        </aside>
+      </section>
+
+      <section class="dense-slide">
+        <h2>Academic Ideas Inside It</h2>
+        <div class="grid-3">
+          <div class="card compact-card">
+            <h3>Test-time scaling</h3>
+            <p>Instead of only training more, spend smart compute while solving.</p>
+          </div>
+          <div class="card compact-card">
+            <h3>Verifier-guided search</h3>
+            <p>Do not trust one guess. Generate options and let a checker reject bad ones.</p>
+          </div>
+          <div class="card compact-card">
+            <h3>Verification granularity</h3>
+            <p>Decide how often to check the work so you do not waste too much compute.</p>
+          </div>
+        </div>
+        <div class="quote-card">
+          <p class="lead">
+            A simple way to say it:<br>
+            do a little search, check the work, spend compute carefully, and keep the process visible.
+          </p>
+        </div>
+        <aside class="notes">
+          This is the bridge slide to the academic audience.
+          It says clearly that the system is not just a product hack.
+          It lives inside the same conversation as test-time scaling, verifier-guided search, and verification granularity.
+          But each term gets translated into plain language immediately.
+        </aside>
+      </section>
+
+      <section>
+        <h2>What Is Still Weak</h2>
+        <div class="grid-2">
+          <div class="card">
+            <div class="label warn">Hard truth</div>
+            <ul>
+              <li>Some of the current quality still depends on shortcuts</li>
+              <li>The biggest shortcut is extra structure around where an option came from</li>
+              <li>When we remove that shortcut, harder cases get worse</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="label bad">Latest warning sign</div>
+            <p><strong>The easy test improved.</strong></p>
+            <p><strong>The harder test still got worse.</strong></p>
+            <p>So a nice small result does not automatically mean the real problem is solved.</p>
+          </div>
+        </div>
+        <div class="section-note">
+          That hidden gap is exactly what this project helps us see instead of cover up.
+          This also matches a warning from recent work on <strong>scaling flaws of verifier-guided search</strong>:
+          a system can look strong on easier slices while still depending on shortcuts.
+        </div>
+        <aside class="notes">
+          This slide protects the credibility of the whole presentation.
+          We are not hiding the negative results.
+          The learned system is useful, but not yet free from shortcut structure.
+          <br><br><strong>Transition:</strong> so the final question is whether this is still worth productizing.
+        </aside>
+      </section>
+
+      <section>
+        <h2>Why It Is Still Worth Building</h2>
+        <div class="grid-3">
+          <div class="card compact-card">
+            <h3>Controllability</h3>
+            <p>You can move the budget and see the trade-off right away.</p>
+          </div>
+          <div class="card compact-card">
+            <h3>Observability</h3>
+            <p>You can see the options, the path, and the failure type.</p>
+          </div>
+          <div class="card compact-card">
+            <h3>Trust</h3>
+            <p>A checked step is easier to trust than a mysterious answer.</p>
+          </div>
+        </div>
+        <div class="quote-card">
+          <p class="lead">
+            The best story here is not “the AI became magical”.<br>
+            The best story is “we built a system that shows its work.”
+          </p>
+        </div>
+        <aside class="notes">
+          End the product claim carefully.
+          The system is not magical.
+          It is useful because it is inspectable.
+          That is the clean handoff from research artifact to product story.
+          <br><br><strong>Transition:</strong> finish with the next gate.
+        </aside>
+      </section>
+
+      <section class="dense-slide">
+        <h2>What We Need To Prove Next</h2>
+        <div class="grid-2">
+          <div class="card">
+            <div class="label good">Keep going if</div>
+            <ul>
+              <li>the learned ordering keeps helping on harder tasks</li>
+              <li>most failures still look like effort or search-order problems</li>
+              <li>the system keeps being useful as a product, not just a lab result</li>
+            </ul>
+          </div>
+          <div class="card">
+            <div class="label bad">Stop if</div>
+            <ul>
+              <li>performance collapses when shortcuts are removed</li>
+              <li>the learned ordering stops adding anything beyond hand-made rules</li>
+              <li>the product becomes only pretty charts around hand-made rules</li>
+            </ul>
+          </div>
+        </div>
+        <div class="section-note">
+          The next step is not another random LoRA run.
+          The next step is a harder transfer test while staying honest about <strong>generalization</strong>,
+          <strong>search-time compute</strong>, and <strong>shortcut dependence</strong>.
+        </div>
+        <aside class="notes">
+          Finish with discipline.
+          The system is promising enough to continue, but only if it keeps working under reduced leakage and harder transfer.
+          That makes the roadmap clear and keeps us from drifting back into vague “maybe the weights will learn it” territory.
+        </aside>
+      </section>
+
+      <section class="dense-slide">
+        <h2>Research Framing</h2>
+        <div class="grid-3">
+          <div class="card compact-card">
+            <h3>Paper idea</h3>
+            <p><strong>test-time scaling</strong></p>
+            <p><strong>verifier-guided search</strong></p>
+            <p><strong>verification granularity</strong></p>
+            <p><strong>search-time compute</strong></p>
+          </div>
+          <div class="card compact-card">
+            <h3>What it means here</h3>
+            <p>Spend extra compute while solving, not only while training.</p>
+            <p>Generate options, reject bad ones, and use budget carefully.</p>
+            <p>Decide how often intermediate checking is worth the cost.</p>
+          </div>
+          <div class="card compact-card">
+            <h3>What we built</h3>
+            <p>candidate generation + ranking + verification + budgeted search</p>
+            <p>MCP-first tools for visible reasoning, CLI-second surface</p>
+            <p>a product surface for controllable and inspectable search-time compute</p>
+          </div>
+        </div>
+        <div class="quote-card">
+          <p class="lead">
+            Short version:<br>
+            this is not a proof of hidden reasoning in the weights.<br>
+            It is a concrete runtime for <strong>visible, verifier-backed, compute-bounded reasoning</strong>.<br>
+            MCP shows runtime behavior, not chain-of-thought.
+          </p>
+        </div>
+        <aside class="notes">
+          This is the final academic bridge slide.
+          If someone from the research side asks what family of ideas this belongs to, this is the answer.
+          We are not claiming a self-contained symbolic mind emerged in the model.
+          We are claiming that a useful reasoning runtime emerges when search, verification, and compute budgeting are treated as first-class parts of the system.
+        </aside>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      controls: true,
+      progress: true,
+      center: false,
+      transition: "fade",
+      margin: 0.04
+    });
+  </script>
+  <script src="js/presentation.js"></script>
+  <script src="js/demos.js"></script>
+</body>
+</html>

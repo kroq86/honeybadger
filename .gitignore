@@ -1,0 +1,29 @@
+__pycache__/
+*.pyc
+.heartbeat/*
+!.heartbeat/.gitkeep
+training_runs/
+.venv-phase2/
+.venv*/
+.pytest_cache/
+.mypy_cache/
+.cache/
+.DS_Store
+events.jsonl
+.ci-smoke/
+.vmbench_mcp_selftest/
+.vmbench_mcp_proof/
+.cursor/
+
+# Generated reports and experiment artifacts
+reports/**
+!reports/.gitkeep
+
+# Generated training exports
+training_data/**
+!training_data/.gitkeep
+
+# Keep only the canonical benchmark dataset in git
+datasets/*
+!datasets/mvp/
+!datasets/mvp/**

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>vmbench | Inspectable Reasoning Runtime</title>
+    <meta
+      name="description"
+      content="vmbench turns reasoning into a visible process: inspect next-step ranking, compare policies under budget, and see why a search run fails."
+    />
+    <meta
+      name="keywords"
+      content="inspectable reasoning,mcp runtime,budgeted search,verified execution,llm runtime"
+    />
+    <meta name="theme-color" content="#0e1726" />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://kroq86.github.io/honeybadger/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="vmbench | Inspectable Reasoning Runtime" />
+    <meta
+      property="og:description"
+      content="An MCP-first reasoning runtime with verified next-step choice, budget control, and failure explanations."
+    />
+    <meta property="og:url" content="https://kroq86.github.io/honeybadger/" />
+    <meta property="og:site_name" content="vmbench" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="vmbench | Inspectable Reasoning Runtime" />
+    <meta
+      name="twitter:description"
+      content="Watch reasoning under budget, compare policies, and inspect verified step selection."
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="manifest" href="./site.webmanifest" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareSourceCode",
+        "name": "vmbench",
+        "codeRepository": "https://github.com/kroq86/honeybadger",
+        "programmingLanguage": "Python",
+        "description": "Inspectable reasoning runtime and VM benchmark toolkit for language models.",
+        "license": "https://github.com/kroq86/honeybadger"
+      }
+    </script>
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <p class="eyebrow">MCP reasoning runtime</p>
+        <h1>vmbench</h1>
+        <p class="lede">
+          Not another chat demo. This page shows a reasoning runtime that ranks candidate steps, verifies them, spends a search budget, and tells you exactly why it failed when it misses.
+        </p>
+        <div class="actions">
+          <a href="./presentation/" class="button primary">Open Presentation</a>
+          <a href="https://github.com/kroq86/honeybadger" class="button">View on GitHub</a>
+          <a href="https://github.com/kroq86/honeybadger/pkgs/container/vmbench" class="button">GHCR Image</a>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <h2>Choose Next Step</h2>
+          <p>See top candidates, inspect the verified winner, and click through rejected branches instead of accepting a hidden completion.</p>
+        </article>
+        <article class="card">
+          <h2>Solve With Budget</h2>
+          <p>Move a budget control and watch when `no ranker`, `heuristic`, and `learned` policies start solving the same record.</p>
+        </article>
+        <article class="card">
+          <h2>Explain Failure</h2>
+          <p>Failures come back as `budget_or_rank_order`, verifier mismatch, or candidate miss with concrete local evidence.</p>
+        </article>
+      </section>
+
+      <section class="content demo-panel">
+        <div class="demo-header">
+          <div>
+            <p class="eyebrow">Inspectable Reasoning</p>
+            <h2>Reasoning Runtime Demo</h2>
+          </div>
+          <div class="demo-meta" id="demo-meta">Loading demo payload...</div>
+        </div>
+        <div class="scenario-strip">
+          <label class="scenario-label" for="scenario-select">Scenario</label>
+          <select id="scenario-select" class="scenario-select"></select>
+        </div>
+
+        <div class="demo-grid">
+          <article class="card">
+            <h3>Choose Next Step</h3>
+            <p class="card-copy">Click any candidate to inspect why it won or why it was rejected.</p>
+            <div id="next-step-winner" class="winner-box"></div>
+            <div id="next-step-list" class="candidate-list"></div>
+            <div id="candidate-detail" class="detail-box"></div>
+          </article>
+
+          <article class="card">
+            <h3>Solve With Budget</h3>
+            <p class="card-copy">Drag through the budget curve and inspect the path each policy finds.</p>
+            <div id="budget-controls" class="budget-controls"></div>
+            <input id="budget-slider" class="budget-slider" type="range" min="0" max="0" step="1" value="0" />
+            <div id="budget-view" class="budget-view"></div>
+          </article>
+        </div>
+
+        <div class="demo-grid">
+          <article class="card">
+            <h3>Explain Failure</h3>
+            <p class="card-copy">This is what the user actually gets when the system cannot finish under the chosen budget.</p>
+            <div id="failure-view"></div>
+          </article>
+
+          <article class="card">
+            <h3>Compare Policies</h3>
+            <p class="card-copy">Select a policy and inspect the actual search attempts, not just summary metrics.</p>
+            <div id="policy-compare" class="policy-grid"></div>
+            <div id="policy-detail" class="detail-box"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="content">
+        <h2>What You Are Looking At</h2>
+        <p>
+          This demo is driven by a real MCP payload, not mock copy. One benchmark record is loaded, candidate steps are ranked,
+          a verifier checks transitions, and multiple policies are run under the same node budget.
+        </p>
+
+        <h2>Why This UX Is Different</h2>
+        <p>
+          The point is not to look magical. The point is to make reasoning controllable, observable, and trustworthy enough
+          that a user can see progress, compare search policies, and understand a miss.
+        </p>
+
+        <h2>Runtime Entry Points</h2>
+        <pre><code>python vmbench_cli.py generate
+python vmbench_cli.py eval --model llama3.2:latest --host http://127.0.0.1:11434
+python vmbench_cli.py gate --summary reports/baseline/&lt;run&gt;/summary.json
+python vmbench_cli.py export-sft
+
+mcp call vmbench_demo_reasoning_runtime
+mcp call vmbench_generate_demo_payload</code></pre>
+
+        <h2>MCP Surface</h2>
+        <ul>
+          <li><code>vmbench_choose_next_step</code></li>
+          <li><code>vmbench_solve_with_budget</code></li>
+          <li><code>vmbench_explain_failure</code></li>
+          <li><code>vmbench_compare_policies</code></li>
+          <li><code>vmbench_demo_reasoning_runtime</code></li>
+          <li><code>vmbench_generate_demo_payload</code></li>
+        </ul>
+      </section>
+    </main>
+    <script src="./demo.js"></script>
+  </body>
+</html>

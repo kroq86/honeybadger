@@ -1,0 +1,301 @@
+{
+  "seed": 7,
+  "output_dir": "datasets/mvp",
+  "task_library_programs": 12,
+  "dataset_types": [
+    "next_2_steps",
+    "short_trace",
+    "single_step",
+    "terminal_state"
+  ],
+  "overall_counts": {
+    "single_step": 128,
+    "next_2_steps": 35,
+    "short_trace": 35,
+    "terminal_state": 35
+  },
+  "split_counts": {
+    "single_step": {
+      "train": 87,
+      "val": 1,
+      "test": 40
+    },
+    "next_2_steps": {
+      "train": 22,
+      "val": 1,
+      "test": 12
+    },
+    "short_trace": {
+      "train": 27,
+      "val": 4,
+      "test": 4
+    },
+    "terminal_state": {
+      "train": 25,
+      "val": 1,
+      "test": 9
+    }
+  },
+  "category_distribution": {
+    "single_step": {
+      "train": {
+        "accumulator": 11,
+        "arithmetic": 11,
+        "recurrence": 31,
+        "search": 33,
+        "straight_line": 1
+      },
+      "val": {
+        "branch": 1
+      },
+      "test": {
+        "loop": 40
+      }
+    },
+    "next_2_steps": {
+      "train": {
+        "accumulator": 2,
+        "arithmetic": 4,
+        "branch": 4,
+        "memory": 1,
+        "search": 11
+      },
+      "val": {
+        "straight_line": 1
+      },
+      "test": {
+        "loop": 7,
+        "recurrence": 5
+      }
+    },
+    "short_trace": {
+      "train": {
+        "accumulator": 2,
+        "branch": 2,
+        "loop": 7,
+        "recurrence": 5,
+        "search": 11
+      },
+      "val": {
+        "arithmetic": 4
+      },
+      "test": {
+        "branch": 2,
+        "memory": 1,
+        "straight_line": 1
+      }
+    },
+    "terminal_state": {
+      "train": {
+        "accumulator": 2,
+        "branch": 4,
+        "loop": 3,
+        "recurrence": 5,
+        "search": 11
+      },
+      "val": {
+        "memory": 1
+      },
+      "test": {
+        "arithmetic": 4,
+        "loop": 4,
+        "straight_line": 1
+      }
+    }
+  },
+  "program_distribution": {
+    "single_step": {
+      "train": {
+        "add_two_numbers": 11,
+        "fib_iterative_5": 31,
+        "first_match_scan_4": 11,
+        "midpoint_search_4": 11,
+        "pair_sum_scan_3": 11,
+        "sum_three_constants": 1,
+        "weighted_sum_3": 11
+      },
+      "val": {
+        "branch_on_equality": 1
+      },
+      "test": {
+        "countdown_steps": 19,
+        "countdown_to_zero": 21
+      }
+    },
+    "next_2_steps": {
+      "train": {
+        "add_two_numbers": 4,
+        "branch_non_equal_flag": 2,
+        "branch_on_equality": 2,
+        "first_match_scan_4": 4,
+        "midpoint_search_4": 4,
+        "pair_sum_scan_3": 3,
+        "store_then_load": 1,
+        "weighted_sum_3": 2
+      },
+      "val": {
+        "sum_three_constants": 1
+      },
+      "test": {
+        "countdown_steps": 3,
+        "countdown_to_zero": 4,
+        "fib_iterative_5": 5
+      }
+    },
+    "short_trace": {
+      "train": {
+        "branch_non_equal_flag": 2,
+        "countdown_steps": 3,
+        "countdown_to_zero": 4,
+        "fib_iterative_5": 5,
+        "first_match_scan_4": 4,
+        "midpoint_search_4": 4,
+        "pair_sum_scan_3": 3,
+        "weighted_sum_3": 2
+      },
+      "val": {
+        "add_two_numbers": 4
+      },
+      "test": {
+        "branch_on_equality": 2,
+        "store_then_load": 1,
+        "sum_three_constants": 1
+      }
+    },
+    "terminal_state": {
+      "train": {
+        "branch_non_equal_flag": 2,
+        "branch_on_equality": 2,
+        "countdown_steps": 3,
+        "fib_iterative_5": 5,
+        "first_match_scan_4": 4,
+        "midpoint_search_4": 4,
+        "pair_sum_scan_3": 3,
+        "weighted_sum_3": 2
+      },
+      "val": {
+        "store_then_load": 1
+      },
+      "test": {
+        "add_two_numbers": 4,
+        "countdown_to_zero": 4,
+        "sum_three_constants": 1
+      }
+    }
+  },
+  "split_family_distribution": {
+    "single_step": {
+      "train": {
+        "add_two_numbers_family": 11,
+        "fib_iterative_5_family": 31,
+        "first_match_scan_4_family": 11,
+        "midpoint_search_4_family": 11,
+        "pair_sum_scan_3_family": 11,
+        "sum_three_constants_family": 1,
+        "weighted_sum_3_family": 11
+      },
+      "val": {
+        "branch_on_equality_family": 1
+      },
+      "test": {
+        "countdown_steps_family": 19,
+        "countdown_to_zero_family": 21
+      }
+    },
+    "next_2_steps": {
+      "train": {
+        "add_two_numbers_family": 4,
+        "branch_non_equal_flag_family": 2,
+        "branch_on_equality_family": 2,
+        "first_match_scan_4_family": 4,
+        "midpoint_search_4_family": 4,
+        "pair_sum_scan_3_family": 3,
+        "store_then_load_family": 1,
+        "weighted_sum_3_family": 2
+      },
+      "val": {
+        "sum_three_constants_family": 1
+      },
+      "test": {
+        "countdown_steps_family": 3,
+        "countdown_to_zero_family": 4,
+        "fib_iterative_5_family": 5
+      }
+    },
+    "short_trace": {
+      "train": {
+        "branch_non_equal_flag_family": 2,
+        "countdown_steps_family": 3,
+        "countdown_to_zero_family": 4,
+        "fib_iterative_5_family": 5,
+        "first_match_scan_4_family": 4,
+        "midpoint_search_4_family": 4,
+        "pair_sum_scan_3_family": 3,
+        "weighted_sum_3_family": 2
+      },
+      "val": {
+        "add_two_numbers_family": 4
+      },
+      "test": {
+        "branch_on_equality_family": 2,
+        "store_then_load_family": 1,
+        "sum_three_constants_family": 1
+      }
+    },
+    "terminal_state": {
+      "train": {
+        "branch_non_equal_flag_family": 2,
+        "branch_on_equality_family": 2,
+        "countdown_steps_family": 3,
+        "fib_iterative_5_family": 5,
+        "first_match_scan_4_family": 4,
+        "midpoint_search_4_family": 4,
+        "pair_sum_scan_3_family": 3,
+        "weighted_sum_3_family": 2
+      },
+      "val": {
+        "store_then_load_family": 1
+      },
+      "test": {
+        "add_two_numbers_family": 4,
+        "countdown_to_zero_family": 4,
+        "sum_three_constants_family": 1
+      }
+    }
+  },
+  "step_distribution": {
+    "single_step": {
+      "train": {},
+      "val": {},
+      "test": {}
+    },
+    "next_2_steps": {
+      "train": {
+        "1-4": 22
+      },
+      "val": {
+        "1-4": 1
+      },
+      "test": {
+        "1-4": 12
+      }
+    },
+    "short_trace": {
+      "train": {
+        "5-8": 6,
+        "9+": 21
+      },
+      "val": {
+        "5-8": 4
+      },
+      "test": {
+        "5-8": 4
+      }
+    },
+    "terminal_state": {
+      "train": {},
+      "val": {},
+      "test": {}
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "entity_type": "generic_entity",
+  "entity_id_pattern": "honeybadger_<experiment_id>",
+  "required_fields": [
+    "repo",
+    "experiment_id",
+    "model_name",
+    "dataset_path",
+    "train_config",
+    "eval_config",
+    "status",
+    "result_summary",
+    "next_action"
+  ],
+  "trace_mapping": {
+    "tool_name": "honeybadger_experiment",
+    "status_field": "status",
+    "summary_field": "result_summary",
+    "decision_reason_field": "decision_reason",
+    "actual_effects_field": "actual_effects"
+  }
+}

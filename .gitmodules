@@ -1,0 +1,3 @@
+[submodule "fasm-handbook"]
+	path = fasm-handbook
+	url = https://github.com/kroq86/fasm-handbook.git

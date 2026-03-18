@@ -1,0 +1,23 @@
+{
+  "phase2_freeze_path": "training/phase2_next2_factorized_freeze.json",
+  "benchmark_dataset_root": "datasets/mvp",
+  "benchmark_stages": [
+    "single_step",
+    "next_2_steps"
+  ],
+  "metrics": [
+    "exact_match",
+    "repaired_exact_match",
+    "avg_field_accuracy"
+  ],
+  "runner_defaults": {
+    "train_shots": 1,
+    "eval_limit": 5,
+    "num_predict": 192,
+    "max_trace_steps": 6,
+    "timeout_seconds": 12
+  },
+  "base_report_path": "reports/phase2_next2_factorized_base_summary.json",
+  "finetuned_report_path": "reports/phase2_next2_factorized_finetuned_summary.json",
+  "comparison_report_path": "reports/phase2_next2_factorized_comparison.md"
+}

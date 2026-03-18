@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vmbench Speaker View</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #081018;
+      --panel: #101a26;
+      --line: rgba(154, 181, 204, 0.18);
+      --text: #eef3f8;
+      --muted: #9aabbb;
+      --cyan: #67e8f9;
+      --green: #6ee7b7;
+      --mono: "IBM Plex Mono", monospace;
+      --sans: "Space Grotesk", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(103,232,249,0.08), transparent 24%),
+        linear-gradient(180deg, #09111a 0%, #060d14 100%);
+      color: var(--text);
+      font-family: var(--sans);
+    }
+    body {
+      padding: 22px;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 18px;
+    }
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 14px;
+      align-items: stretch;
+    }
+    .mini {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px 14px;
+      min-height: 74px;
+    }
+    .mini-label {
+      display: block;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .mini-title {
+      font-size: 24px;
+      line-height: 1.15;
+      color: var(--text);
+    }
+    .counter {
+      min-width: 130px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+    .counter strong {
+      font-size: 34px;
+      color: var(--cyan);
+    }
+    .notes {
+      background: rgba(16, 26, 38, 0.95);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 24px 28px;
+      overflow: auto;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+    }
+    .notes .label {
+      display: inline-block;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      color: var(--green);
+      margin-bottom: 16px;
+    }
+    .notes-content {
+      font-size: 38px;
+      line-height: 1.42;
+    }
+    .notes-content strong {
+      color: var(--cyan);
+    }
+    .hint {
+      margin-top: 18px;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="mini">
+      <span class="mini-label">Current</span>
+      <div class="mini-title" id="current-title">Waiting for presentation…</div>
+    </div>
+    <div class="mini">
+      <span class="mini-label">Next</span>
+      <div class="mini-title" id="next-title">—</div>
+    </div>
+    <div class="mini counter">
+      <span class="mini-label">Slide</span>
+      <strong id="counter">1 / 1</strong>
+    </div>
+  </div>
+  <div class="notes">
+    <div class="label">Notes</div>
+    <div class="notes-content" id="notes-content">Open the main deck and press S there.</div>
+    <div class="hint">Use `Space` / `Right Arrow` for next slide, `Left Arrow` for previous slide.</div>
+  </div>
+  <script>
+    (function () {
+      const SPEAKER_KEY = "vmbench-speaker-state";
+      const COMMAND_KEY = "vmbench-speaker-command";
+      function render() {
+        let state = null;
+        try {
+          state = JSON.parse(window.localStorage.getItem(SPEAKER_KEY) || "null");
+        } catch (error) {
+          state = null;
+        }
+        if (!state) return;
+        document.getElementById("current-title").textContent = state.currentTitle || "Untitled slide";
+        document.getElementById("next-title").textContent = state.nextTitle || "End";
+        document.getElementById("counter").textContent = `${state.currentIndex} / ${state.total}`;
+        document.getElementById("notes-content").innerHTML = state.notesHtml || "No notes for this slide.";
+      }
+      function sendCommand(command) {
+        try {
+          window.localStorage.setItem(COMMAND_KEY, command);
+        } catch (error) {
+          // Ignore localStorage issues.
+        }
+      }
+      window.addEventListener("storage", (event) => {
+        if (event.key === SPEAKER_KEY) render();
+      });
+      window.addEventListener("keydown", (event) => {
+        if (event.key === " " || event.key === "ArrowRight" || event.key === "PageDown") {
+          event.preventDefault();
+          sendCommand("next");
+        }
+        if (event.key === "ArrowLeft" || event.key === "PageUp" || event.key === "Backspace") {
+          event.preventDefault();
+          sendCommand("prev");
+        }
+      });
+      render();
+      setInterval(render, 500);
+    })();
+  </script>
+</body>
+</html>

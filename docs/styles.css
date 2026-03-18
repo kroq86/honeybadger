@@ -1,0 +1,367 @@
+:root {
+  --bg: #0e1726;
+  --panel: #132038;
+  --text: #e8efff;
+  --muted: #9eb0cf;
+  --accent: #53d8fb;
+  --accent-2: #ffd166;
+  --border: rgba(255, 255, 255, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(83, 216, 251, 0.18), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(255, 209, 102, 0.16), transparent 28%),
+    var(--bg);
+  color: var(--text);
+}
+
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 48px 20px 80px;
+}
+
+.hero {
+  padding: 24px 0 40px;
+}
+
+.eyebrow {
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.8rem;
+}
+
+h1 {
+  margin: 8px 0 16px;
+  font-size: clamp(2.4rem, 6vw, 5rem);
+  line-height: 0.95;
+}
+
+.lede {
+  max-width: 760px;
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.button {
+  display: inline-block;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.button.primary {
+  background: linear-gradient(135deg, var(--accent), #7cf0c9);
+  color: #07101f;
+  border-color: transparent;
+  font-weight: 700;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 24px 0 40px;
+}
+
+.card,
+.content {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+}
+
+.card {
+  padding: 18px;
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+
+.card h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.card p,
+.content p,
+.content li {
+  color: var(--muted);
+}
+
+.card-copy {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: var(--muted);
+}
+
+.content {
+  padding: 24px;
+}
+
+.demo-panel {
+  margin-bottom: 40px;
+}
+
+.demo-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: end;
+  margin-bottom: 18px;
+}
+
+.demo-meta {
+  color: var(--muted);
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+  font-size: 0.9rem;
+}
+
+.scenario-strip {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.scenario-label {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.scenario-select {
+  min-width: 240px;
+  border: 1px solid var(--border);
+  background: #09111f;
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.demo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.winner-box,
+.failure-card,
+.budget-view,
+.detail-box {
+  background: #09111f;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.winner-box {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.pill {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.pill.success {
+  color: #07101f;
+  background: linear-gradient(135deg, var(--accent), #7cf0c9);
+  border-color: transparent;
+}
+
+.pill.danger {
+  color: #fff2f0;
+  background: rgba(255, 107, 107, 0.18);
+  border-color: rgba(255, 107, 107, 0.35);
+}
+
+.candidate-list {
+  display: grid;
+  gap: 10px;
+}
+
+.candidate-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: 100%;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.candidate-row.active,
+.policy-card.active {
+  border-color: rgba(83, 216, 251, 0.5);
+  box-shadow: 0 0 0 1px rgba(83, 216, 251, 0.3);
+}
+
+.candidate-meta,
+.failure-copy,
+.policy-path {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.failure-title,
+.budget-summary,
+.policy-name {
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.budget-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.budget-button {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.budget-button.active {
+  background: linear-gradient(135deg, var(--accent-2), #ffd166);
+  color: #07101f;
+  border-color: transparent;
+}
+
+.budget-slider {
+  width: 100%;
+  margin-bottom: 14px;
+  accent-color: var(--accent-2);
+}
+
+.policy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.policy-card {
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.policy-card.compact {
+  cursor: default;
+}
+
+.policy-metric {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.detail-box {
+  margin-top: 14px;
+}
+
+.detail-title {
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.detail-line {
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.attempt-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.attempt-row {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+}
+
+.attempt-head {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.attempt-meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+pre {
+  overflow-x: auto;
+  background: #09111f;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+}
+
+code {
+  font-family: "IBM Plex Mono", "SFMono-Regular", monospace;
+}
+
+a {
+  color: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding-top: 32px;
+  }
+
+  .demo-header {
+    align-items: start;
+    flex-direction: column;
+  }
+}

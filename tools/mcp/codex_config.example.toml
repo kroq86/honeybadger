@@ -1,0 +1,15 @@
+[projects."/Users/ll/honeybadger"]
+trust_level = "trusted"
+
+[mcp_servers.vmbench]
+command = "docker"
+args = [
+  "run",
+  "--rm",
+  "-i",
+  "-v",
+  "/Users/ll/honeybadger:/workspace",
+  "-w",
+  "/workspace",
+  "vmbench-mcp:local",
+]

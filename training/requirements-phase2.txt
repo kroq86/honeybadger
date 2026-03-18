@@ -1,0 +1,9 @@
+# Minimal Phase 2 training runtime target.
+# Install torch separately in the way that matches the local machine/accelerator.
+
+transformers
+peft
+accelerate
+trl
+sentencepiece
+safetensors

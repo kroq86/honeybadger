@@ -1,0 +1,9 @@
+{
+  "name": "vmbench",
+  "short_name": "vmbench",
+  "start_url": "/honeybadger/",
+  "display": "standalone",
+  "background_color": "#0e1726",
+  "theme_color": "#0e1726",
+  "description": "Formal VM benchmark and synthetic training/eval toolkit for language models."
+}

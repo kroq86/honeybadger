@@ -1,0 +1,29 @@
+{
+  "model_name": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "trust_remote_code": false,
+  "dataset_path": "training_data/sft_next2_biased_v1/train.jsonl",
+  "output_dir": "training_runs/lora_next2_bias_v1",
+  "training_mode": "lora",
+  "max_seq_length": 512,
+  "per_device_train_batch_size": 1,
+  "gradient_accumulation_steps": 8,
+  "learning_rate": 0.0002,
+  "num_train_epochs": 2,
+  "max_steps": 48,
+  "max_train_samples": 227,
+  "lora_r": 8,
+  "lora_alpha": 16,
+  "lora_dropout": 0.05,
+  "lora_target_modules": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj"
+  ],
+  "guardrails": {
+    "max_wall_time_minutes": 45,
+    "max_checkpoints_to_keep": 2,
+    "save_strategy": "epoch",
+    "first_run_purpose": "next2_bias"
+  }
+}

@@ -1,0 +1,2236 @@
+{
+  "status": "success",
+  "payload": {
+    "dataset_path": "reports/vmbench/search/two_step_windows_test_split.jsonl",
+    "record_indices": [
+      0,
+      8,
+      10,
+      13,
+      15
+    ],
+    "default_scenario_id": "branch_on_equality#0",
+    "scenario_count": 5,
+    "scenarios": [
+      {
+        "dataset_path": "reports/vmbench/search/two_step_windows_test_split.jsonl",
+        "record_index": 0,
+        "scenario_id": "branch_on_equality#0",
+        "scenario_label": "branch_on_equality #0",
+        "program_name": "branch_on_equality",
+        "verifier_mode": "state_diff",
+        "candidate_mode": "program_global",
+        "candidate_limit": 32,
+        "budgets": [
+          2,
+          4,
+          8,
+          12
+        ],
+        "choose_next_step": {
+          "program_name": "branch_on_equality",
+          "verifier_mode": "state_diff",
+          "ranker": "learned",
+          "winner": {
+            "rank": 1,
+            "instruction_text": "READ R2, input[1]",
+            "source": "current_ip",
+            "verified": true,
+            "matches_first_target_state": true,
+            "error_type": null,
+            "notes": []
+          },
+          "top_candidates": [
+            {
+              "rank": 1,
+              "instruction_text": "READ R2, input[1]",
+              "source": "current_ip",
+              "verified": true,
+              "matches_first_target_state": true,
+              "error_type": null,
+              "notes": []
+            },
+            {
+              "rank": 2,
+              "instruction_text": "CMP R1, R2",
+              "source": "next_ip",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 3,
+              "instruction_text": "JZ MATCH",
+              "source": "next2_ip",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 4,
+              "instruction_text": "READ R1, input[0]",
+              "source": "prev_ip",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 5,
+              "instruction_text": "WRITE output[0], R3",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 6,
+              "instruction_text": "HALT",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 7,
+              "instruction_text": "CONST R3, 0",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 8,
+              "instruction_text": "CONST R3, 1",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            }
+          ]
+        },
+        "solve_with_budget_curve": [
+          {
+            "node_budget": 2,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": false,
+                "nodes_explored": 2,
+                "budget_exhausted": true,
+                "successful_path": []
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R2, input[1]",
+                  "CMP R1, R2"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R2, input[1]",
+                  "CMP R1, R2"
+                ]
+              }
+            ]
+          },
+          {
+            "node_budget": 4,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": false,
+                "nodes_explored": 4,
+                "budget_exhausted": true,
+                "successful_path": []
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R2, input[1]",
+                  "CMP R1, R2"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R2, input[1]",
+                  "CMP R1, R2"
+                ]
+              }
+            ]
+          },
+          {
+            "node_budget": 8,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": true,
+                "nodes_explored": 5,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R2, input[1]",
+                  "CMP R1, R2"
+                ]
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R2, input[1]",
+                  "CMP R1, R2"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R2, input[1]",
+                  "CMP R1, R2"
+                ]
+              }
+            ]
+          },
+          {
+            "node_budget": 12,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": true,
+                "nodes_explored": 5,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R2, input[1]",
+                  "CMP R1, R2"
+                ]
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R2, input[1]",
+                  "CMP R1, R2"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R2, input[1]",
+                  "CMP R1, R2"
+                ]
+              }
+            ]
+          }
+        ],
+        "failure_demo": {
+          "category": "budget_or_rank_order",
+          "first_hit_rank": 2,
+          "details": {
+            "program_name": "branch_on_equality",
+            "solved": false,
+            "successful_path": [],
+            "nodes_explored": 2,
+            "budget_exhausted": true,
+            "attempts": [
+              {
+                "instruction_text": "READ R1, input[0]",
+                "source": "prev_ip",
+                "expected_instruction": "READ R2, input[1]",
+                "error_type": null,
+                "notes": [
+                  "instruction_mismatch",
+                  "target_mismatch"
+                ]
+              },
+              {
+                "instruction_text": "READ R2, input[1]",
+                "source": "current_ip",
+                "expected_instruction": "READ R2, input[1]",
+                "error_type": null,
+                "notes": []
+              }
+            ]
+          }
+        },
+        "compare_policies": {
+          "policies": [
+            {
+              "policy": "none",
+              "program_name": "branch_on_equality",
+              "solved": true,
+              "successful_path": [
+                "READ R2, input[1]",
+                "CMP R1, R2"
+              ],
+              "nodes_explored": 5,
+              "budget_exhausted": false,
+              "attempts": [
+                {
+                  "instruction_text": "READ R1, input[0]",
+                  "source": "prev_ip",
+                  "expected_instruction": "READ R2, input[1]",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "READ R2, input[1]",
+                  "source": "current_ip",
+                  "expected_instruction": "READ R2, input[1]",
+                  "error_type": null,
+                  "notes": []
+                },
+                {
+                  "instruction_text": "READ R1, input[0]",
+                  "source": "program_scan",
+                  "expected_instruction": "CMP R1, R2",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "READ R2, input[1]",
+                  "source": "prev_ip",
+                  "expected_instruction": "CMP R1, R2",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "CMP R1, R2",
+                  "source": "current_ip",
+                  "expected_instruction": "CMP R1, R2",
+                  "error_type": null,
+                  "notes": []
+                }
+              ]
+            },
+            {
+              "policy": "heuristic",
+              "program_name": "branch_on_equality",
+              "solved": true,
+              "successful_path": [
+                "READ R2, input[1]",
+                "CMP R1, R2"
+              ],
+              "nodes_explored": 2,
+              "budget_exhausted": false,
+              "attempts": [
+                {
+                  "instruction_text": "READ R2, input[1]",
+                  "source": "current_ip",
+                  "expected_instruction": "READ R2, input[1]",
+                  "error_type": null,
+                  "notes": []
+                },
+                {
+                  "instruction_text": "CMP R1, R2",
+                  "source": "current_ip",
+                  "expected_instruction": "CMP R1, R2",
+                  "error_type": null,
+                  "notes": []
+                }
+              ]
+            },
+            {
+              "policy": "learned",
+              "program_name": "branch_on_equality",
+              "solved": true,
+              "successful_path": [
+                "READ R2, input[1]",
+                "CMP R1, R2"
+              ],
+              "nodes_explored": 2,
+              "budget_exhausted": false,
+              "attempts": [
+                {
+                  "instruction_text": "READ R2, input[1]",
+                  "source": "current_ip",
+                  "expected_instruction": "READ R2, input[1]",
+                  "error_type": null,
+                  "notes": []
+                },
+                {
+                  "instruction_text": "CMP R1, R2",
+                  "source": "current_ip",
+                  "expected_instruction": "CMP R1, R2",
+                  "error_type": null,
+                  "notes": []
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "dataset_path": "reports/vmbench/search/two_step_windows_test_split.jsonl",
+        "record_index": 8,
+        "scenario_id": "countdown_steps#8",
+        "scenario_label": "countdown_steps #8",
+        "program_name": "countdown_steps",
+        "verifier_mode": "state_diff",
+        "candidate_mode": "program_global",
+        "candidate_limit": 32,
+        "budgets": [
+          2,
+          4,
+          8,
+          12
+        ],
+        "choose_next_step": {
+          "program_name": "countdown_steps",
+          "verifier_mode": "state_diff",
+          "ranker": "learned",
+          "winner": {
+            "rank": 1,
+            "instruction_text": "ADD R4, R4, R3",
+            "source": "current_ip",
+            "verified": true,
+            "matches_first_target_state": true,
+            "error_type": null,
+            "notes": []
+          },
+          "top_candidates": [
+            {
+              "rank": 1,
+              "instruction_text": "ADD R4, R4, R3",
+              "source": "current_ip",
+              "verified": true,
+              "matches_first_target_state": true,
+              "error_type": null,
+              "notes": []
+            },
+            {
+              "rank": 2,
+              "instruction_text": "SUB R1, R1, R3",
+              "source": "prev_ip",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 3,
+              "instruction_text": "CMP R1, R2",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 4,
+              "instruction_text": "JZ DONE",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 5,
+              "instruction_text": "READ R1, input[0]",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 6,
+              "instruction_text": "CONST R2, 0",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 7,
+              "instruction_text": "CONST R3, 1",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 8,
+              "instruction_text": "CONST R4, 0",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            }
+          ]
+        },
+        "solve_with_budget_curve": [
+          {
+            "node_budget": 2,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": false,
+                "nodes_explored": 2,
+                "budget_exhausted": true,
+                "successful_path": []
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "ADD R4, R4, R3",
+                  "JMP LOOP"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "ADD R4, R4, R3",
+                  "JMP LOOP"
+                ]
+              }
+            ]
+          },
+          {
+            "node_budget": 4,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": false,
+                "nodes_explored": 4,
+                "budget_exhausted": true,
+                "successful_path": []
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "ADD R4, R4, R3",
+                  "JMP LOOP"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "ADD R4, R4, R3",
+                  "JMP LOOP"
+                ]
+              }
+            ]
+          },
+          {
+            "node_budget": 8,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": false,
+                "nodes_explored": 8,
+                "budget_exhausted": true,
+                "successful_path": []
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "ADD R4, R4, R3",
+                  "JMP LOOP"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "ADD R4, R4, R3",
+                  "JMP LOOP"
+                ]
+              }
+            ]
+          },
+          {
+            "node_budget": 12,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": false,
+                "nodes_explored": 12,
+                "budget_exhausted": true,
+                "successful_path": []
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "ADD R4, R4, R3",
+                  "JMP LOOP"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "ADD R4, R4, R3",
+                  "JMP LOOP"
+                ]
+              }
+            ]
+          }
+        ],
+        "failure_demo": {
+          "category": "budget_or_rank_order",
+          "first_hit_rank": 8,
+          "details": {
+            "program_name": "countdown_steps",
+            "solved": false,
+            "successful_path": [],
+            "nodes_explored": 2,
+            "budget_exhausted": true,
+            "attempts": [
+              {
+                "instruction_text": "READ R1, input[0]",
+                "source": "program_scan",
+                "expected_instruction": "ADD R4, R4, R3",
+                "error_type": null,
+                "notes": [
+                  "instruction_mismatch",
+                  "target_mismatch"
+                ]
+              },
+              {
+                "instruction_text": "CONST R2, 0",
+                "source": "program_scan",
+                "expected_instruction": "ADD R4, R4, R3",
+                "error_type": null,
+                "notes": [
+                  "instruction_mismatch",
+                  "target_mismatch"
+                ]
+              }
+            ]
+          }
+        },
+        "compare_policies": {
+          "policies": [
+            {
+              "policy": "none",
+              "program_name": "countdown_steps",
+              "solved": false,
+              "successful_path": [],
+              "nodes_explored": 12,
+              "budget_exhausted": true,
+              "attempts": [
+                {
+                  "instruction_text": "READ R1, input[0]",
+                  "source": "program_scan",
+                  "expected_instruction": "ADD R4, R4, R3",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "CONST R2, 0",
+                  "source": "program_scan",
+                  "expected_instruction": "ADD R4, R4, R3",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "CONST R3, 1",
+                  "source": "program_scan",
+                  "expected_instruction": "ADD R4, R4, R3",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "CONST R4, 0",
+                  "source": "program_scan",
+                  "expected_instruction": "ADD R4, R4, R3",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "CMP R1, R2",
+                  "source": "program_scan",
+                  "expected_instruction": "ADD R4, R4, R3",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "JZ DONE",
+                  "source": "program_scan",
+                  "expected_instruction": "ADD R4, R4, R3",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "SUB R1, R1, R3",
+                  "source": "prev_ip",
+                  "expected_instruction": "ADD R4, R4, R3",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "ADD R4, R4, R3",
+                  "source": "current_ip",
+                  "expected_instruction": "ADD R4, R4, R3",
+                  "error_type": null,
+                  "notes": []
+                },
+                {
+                  "instruction_text": "READ R1, input[0]",
+                  "source": "program_scan",
+                  "expected_instruction": "JMP LOOP",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "CONST R2, 0",
+                  "source": "program_scan",
+                  "expected_instruction": "JMP LOOP",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "CONST R3, 1",
+                  "source": "program_scan",
+                  "expected_instruction": "JMP LOOP",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "CONST R4, 0",
+                  "source": "program_scan",
+                  "expected_instruction": "JMP LOOP",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                }
+              ]
+            },
+            {
+              "policy": "heuristic",
+              "program_name": "countdown_steps",
+              "solved": true,
+              "successful_path": [
+                "ADD R4, R4, R3",
+                "JMP LOOP"
+              ],
+              "nodes_explored": 2,
+              "budget_exhausted": false,
+              "attempts": [
+                {
+                  "instruction_text": "ADD R4, R4, R3",
+                  "source": "current_ip",
+                  "expected_instruction": "ADD R4, R4, R3",
+                  "error_type": null,
+                  "notes": []
+                },
+                {
+                  "instruction_text": "JMP LOOP",
+                  "source": "current_ip",
+                  "expected_instruction": "JMP LOOP",
+                  "error_type": null,
+                  "notes": []
+                }
+              ]
+            },
+            {
+              "policy": "learned",
+              "program_name": "countdown_steps",
+              "solved": true,
+              "successful_path": [
+                "ADD R4, R4, R3",
+                "JMP LOOP"
+              ],
+              "nodes_explored": 2,
+              "budget_exhausted": false,
+              "attempts": [
+                {
+                  "instruction_text": "ADD R4, R4, R3",
+                  "source": "current_ip",
+                  "expected_instruction": "ADD R4, R4, R3",
+                  "error_type": null,
+                  "notes": []
+                },
+                {
+                  "instruction_text": "JMP LOOP",
+                  "source": "current_ip",
+                  "expected_instruction": "JMP LOOP",
+                  "error_type": null,
+                  "notes": []
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "dataset_path": "reports/vmbench/search/two_step_windows_test_split.jsonl",
+        "record_index": 10,
+        "scenario_id": "pair_sum_scan_3#10",
+        "scenario_label": "pair_sum_scan_3 #10",
+        "program_name": "pair_sum_scan_3",
+        "verifier_mode": "state_diff",
+        "candidate_mode": "program_global",
+        "candidate_limit": 32,
+        "budgets": [
+          2,
+          4,
+          8,
+          12
+        ],
+        "choose_next_step": {
+          "program_name": "pair_sum_scan_3",
+          "verifier_mode": "state_diff",
+          "ranker": "learned",
+          "winner": {
+            "rank": 1,
+            "instruction_text": "READ R3, input[2]",
+            "source": "current_ip",
+            "verified": true,
+            "matches_first_target_state": true,
+            "error_type": null,
+            "notes": []
+          },
+          "top_candidates": [
+            {
+              "rank": 1,
+              "instruction_text": "READ R3, input[2]",
+              "source": "current_ip",
+              "verified": true,
+              "matches_first_target_state": true,
+              "error_type": null,
+              "notes": []
+            },
+            {
+              "rank": 2,
+              "instruction_text": "READ R4, input[3]",
+              "source": "next_ip",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 3,
+              "instruction_text": "ADD R5, R1, R2",
+              "source": "next2_ip",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 4,
+              "instruction_text": "READ R2, input[1]",
+              "source": "prev_ip",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 5,
+              "instruction_text": "CMP R5, R4",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 6,
+              "instruction_text": "ADD R5, R1, R3",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 7,
+              "instruction_text": "JZ FOUND_01",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 8,
+              "instruction_text": "READ R1, input[0]",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            }
+          ]
+        },
+        "solve_with_budget_curve": [
+          {
+            "node_budget": 2,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": false,
+                "nodes_explored": 2,
+                "budget_exhausted": true,
+                "successful_path": []
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[2]",
+                  "READ R4, input[3]"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[2]",
+                  "READ R4, input[3]"
+                ]
+              }
+            ]
+          },
+          {
+            "node_budget": 4,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": false,
+                "nodes_explored": 4,
+                "budget_exhausted": true,
+                "successful_path": []
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[2]",
+                  "READ R4, input[3]"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[2]",
+                  "READ R4, input[3]"
+                ]
+              }
+            ]
+          },
+          {
+            "node_budget": 8,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": true,
+                "nodes_explored": 7,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[2]",
+                  "READ R4, input[3]"
+                ]
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[2]",
+                  "READ R4, input[3]"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[2]",
+                  "READ R4, input[3]"
+                ]
+              }
+            ]
+          },
+          {
+            "node_budget": 12,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": true,
+                "nodes_explored": 7,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[2]",
+                  "READ R4, input[3]"
+                ]
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[2]",
+                  "READ R4, input[3]"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[2]",
+                  "READ R4, input[3]"
+                ]
+              }
+            ]
+          }
+        ],
+        "failure_demo": {
+          "category": "budget_or_rank_order",
+          "first_hit_rank": 3,
+          "details": {
+            "program_name": "pair_sum_scan_3",
+            "solved": false,
+            "successful_path": [],
+            "nodes_explored": 2,
+            "budget_exhausted": true,
+            "attempts": [
+              {
+                "instruction_text": "READ R1, input[0]",
+                "source": "program_scan",
+                "expected_instruction": "READ R3, input[2]",
+                "error_type": null,
+                "notes": [
+                  "instruction_mismatch",
+                  "target_mismatch"
+                ]
+              },
+              {
+                "instruction_text": "READ R2, input[1]",
+                "source": "prev_ip",
+                "expected_instruction": "READ R3, input[2]",
+                "error_type": null,
+                "notes": [
+                  "instruction_mismatch",
+                  "target_mismatch"
+                ]
+              }
+            ]
+          }
+        },
+        "compare_policies": {
+          "policies": [
+            {
+              "policy": "none",
+              "program_name": "pair_sum_scan_3",
+              "solved": true,
+              "successful_path": [
+                "READ R3, input[2]",
+                "READ R4, input[3]"
+              ],
+              "nodes_explored": 7,
+              "budget_exhausted": false,
+              "attempts": [
+                {
+                  "instruction_text": "READ R1, input[0]",
+                  "source": "program_scan",
+                  "expected_instruction": "READ R3, input[2]",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "READ R2, input[1]",
+                  "source": "prev_ip",
+                  "expected_instruction": "READ R3, input[2]",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "READ R3, input[2]",
+                  "source": "current_ip",
+                  "expected_instruction": "READ R3, input[2]",
+                  "error_type": null,
+                  "notes": []
+                },
+                {
+                  "instruction_text": "READ R1, input[0]",
+                  "source": "program_scan",
+                  "expected_instruction": "READ R4, input[3]",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "READ R2, input[1]",
+                  "source": "program_scan",
+                  "expected_instruction": "READ R4, input[3]",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "READ R3, input[2]",
+                  "source": "prev_ip",
+                  "expected_instruction": "READ R4, input[3]",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "READ R4, input[3]",
+                  "source": "current_ip",
+                  "expected_instruction": "READ R4, input[3]",
+                  "error_type": null,
+                  "notes": []
+                }
+              ]
+            },
+            {
+              "policy": "heuristic",
+              "program_name": "pair_sum_scan_3",
+              "solved": true,
+              "successful_path": [
+                "READ R3, input[2]",
+                "READ R4, input[3]"
+              ],
+              "nodes_explored": 2,
+              "budget_exhausted": false,
+              "attempts": [
+                {
+                  "instruction_text": "READ R3, input[2]",
+                  "source": "current_ip",
+                  "expected_instruction": "READ R3, input[2]",
+                  "error_type": null,
+                  "notes": []
+                },
+                {
+                  "instruction_text": "READ R4, input[3]",
+                  "source": "current_ip",
+                  "expected_instruction": "READ R4, input[3]",
+                  "error_type": null,
+                  "notes": []
+                }
+              ]
+            },
+            {
+              "policy": "learned",
+              "program_name": "pair_sum_scan_3",
+              "solved": true,
+              "successful_path": [
+                "READ R3, input[2]",
+                "READ R4, input[3]"
+              ],
+              "nodes_explored": 2,
+              "budget_exhausted": false,
+              "attempts": [
+                {
+                  "instruction_text": "READ R3, input[2]",
+                  "source": "current_ip",
+                  "expected_instruction": "READ R3, input[2]",
+                  "error_type": null,
+                  "notes": []
+                },
+                {
+                  "instruction_text": "READ R4, input[3]",
+                  "source": "current_ip",
+                  "expected_instruction": "READ R4, input[3]",
+                  "error_type": null,
+                  "notes": []
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "dataset_path": "reports/vmbench/search/two_step_windows_test_split.jsonl",
+        "record_index": 13,
+        "scenario_id": "midpoint_search_4#13",
+        "scenario_label": "midpoint_search_4 #13",
+        "program_name": "midpoint_search_4",
+        "verifier_mode": "state_diff",
+        "candidate_mode": "program_global",
+        "candidate_limit": 32,
+        "budgets": [
+          2,
+          4,
+          8,
+          12
+        ],
+        "choose_next_step": {
+          "program_name": "midpoint_search_4",
+          "verifier_mode": "state_diff",
+          "ranker": "learned",
+          "winner": {
+            "rank": 1,
+            "instruction_text": "READ R3, input[0]",
+            "source": "current_ip",
+            "verified": true,
+            "matches_first_target_state": true,
+            "error_type": null,
+            "notes": []
+          },
+          "top_candidates": [
+            {
+              "rank": 1,
+              "instruction_text": "READ R3, input[0]",
+              "source": "current_ip",
+              "verified": true,
+              "matches_first_target_state": true,
+              "error_type": null,
+              "notes": []
+            },
+            {
+              "rank": 2,
+              "instruction_text": "CMP R3, R2",
+              "source": "next_ip",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 3,
+              "instruction_text": "JZ FOUND_MID",
+              "source": "prev_ip",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 4,
+              "instruction_text": "JZ FOUND_LEFT",
+              "source": "next2_ip",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 5,
+              "instruction_text": "CMP R1, R2",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 6,
+              "instruction_text": "READ R1, input[2]",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 7,
+              "instruction_text": "READ R2, input[4]",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 8,
+              "instruction_text": "READ R4, input[1]",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            }
+          ]
+        },
+        "solve_with_budget_curve": [
+          {
+            "node_budget": 2,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": false,
+                "nodes_explored": 2,
+                "budget_exhausted": true,
+                "successful_path": []
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[0]",
+                  "CMP R3, R2"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[0]",
+                  "CMP R3, R2"
+                ]
+              }
+            ]
+          },
+          {
+            "node_budget": 4,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": false,
+                "nodes_explored": 4,
+                "budget_exhausted": true,
+                "successful_path": []
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[0]",
+                  "CMP R3, R2"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[0]",
+                  "CMP R3, R2"
+                ]
+              }
+            ]
+          },
+          {
+            "node_budget": 8,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": false,
+                "nodes_explored": 8,
+                "budget_exhausted": true,
+                "successful_path": []
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[0]",
+                  "CMP R3, R2"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[0]",
+                  "CMP R3, R2"
+                ]
+              }
+            ]
+          },
+          {
+            "node_budget": 12,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": true,
+                "nodes_explored": 11,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[0]",
+                  "CMP R3, R2"
+                ]
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[0]",
+                  "CMP R3, R2"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R3, input[0]",
+                  "CMP R3, R2"
+                ]
+              }
+            ]
+          }
+        ],
+        "failure_demo": {
+          "category": "budget_or_rank_order",
+          "first_hit_rank": 5,
+          "details": {
+            "program_name": "midpoint_search_4",
+            "solved": false,
+            "successful_path": [],
+            "nodes_explored": 2,
+            "budget_exhausted": true,
+            "attempts": [
+              {
+                "instruction_text": "READ R1, input[2]",
+                "source": "program_scan",
+                "expected_instruction": "READ R3, input[0]",
+                "error_type": null,
+                "notes": [
+                  "instruction_mismatch",
+                  "target_mismatch"
+                ]
+              },
+              {
+                "instruction_text": "READ R2, input[4]",
+                "source": "program_scan",
+                "expected_instruction": "READ R3, input[0]",
+                "error_type": null,
+                "notes": [
+                  "instruction_mismatch",
+                  "target_mismatch"
+                ]
+              }
+            ]
+          }
+        },
+        "compare_policies": {
+          "policies": [
+            {
+              "policy": "none",
+              "program_name": "midpoint_search_4",
+              "solved": true,
+              "successful_path": [
+                "READ R3, input[0]",
+                "CMP R3, R2"
+              ],
+              "nodes_explored": 11,
+              "budget_exhausted": false,
+              "attempts": [
+                {
+                  "instruction_text": "READ R1, input[2]",
+                  "source": "program_scan",
+                  "expected_instruction": "READ R3, input[0]",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "READ R2, input[4]",
+                  "source": "program_scan",
+                  "expected_instruction": "READ R3, input[0]",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "CMP R1, R2",
+                  "source": "program_scan",
+                  "expected_instruction": "READ R3, input[0]",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "JZ FOUND_MID",
+                  "source": "prev_ip",
+                  "expected_instruction": "READ R3, input[0]",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "READ R3, input[0]",
+                  "source": "current_ip",
+                  "expected_instruction": "READ R3, input[0]",
+                  "error_type": null,
+                  "notes": []
+                },
+                {
+                  "instruction_text": "READ R1, input[2]",
+                  "source": "program_scan",
+                  "expected_instruction": "CMP R3, R2",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "READ R2, input[4]",
+                  "source": "program_scan",
+                  "expected_instruction": "CMP R3, R2",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "CMP R1, R2",
+                  "source": "program_scan",
+                  "expected_instruction": "CMP R3, R2",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "JZ FOUND_MID",
+                  "source": "program_scan",
+                  "expected_instruction": "CMP R3, R2",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "READ R3, input[0]",
+                  "source": "prev_ip",
+                  "expected_instruction": "CMP R3, R2",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "CMP R3, R2",
+                  "source": "current_ip",
+                  "expected_instruction": "CMP R3, R2",
+                  "error_type": null,
+                  "notes": []
+                }
+              ]
+            },
+            {
+              "policy": "heuristic",
+              "program_name": "midpoint_search_4",
+              "solved": true,
+              "successful_path": [
+                "READ R3, input[0]",
+                "CMP R3, R2"
+              ],
+              "nodes_explored": 2,
+              "budget_exhausted": false,
+              "attempts": [
+                {
+                  "instruction_text": "READ R3, input[0]",
+                  "source": "current_ip",
+                  "expected_instruction": "READ R3, input[0]",
+                  "error_type": null,
+                  "notes": []
+                },
+                {
+                  "instruction_text": "CMP R3, R2",
+                  "source": "current_ip",
+                  "expected_instruction": "CMP R3, R2",
+                  "error_type": null,
+                  "notes": []
+                }
+              ]
+            },
+            {
+              "policy": "learned",
+              "program_name": "midpoint_search_4",
+              "solved": true,
+              "successful_path": [
+                "READ R3, input[0]",
+                "CMP R3, R2"
+              ],
+              "nodes_explored": 2,
+              "budget_exhausted": false,
+              "attempts": [
+                {
+                  "instruction_text": "READ R3, input[0]",
+                  "source": "current_ip",
+                  "expected_instruction": "READ R3, input[0]",
+                  "error_type": null,
+                  "notes": []
+                },
+                {
+                  "instruction_text": "CMP R3, R2",
+                  "source": "current_ip",
+                  "expected_instruction": "CMP R3, R2",
+                  "error_type": null,
+                  "notes": []
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "dataset_path": "reports/vmbench/search/two_step_windows_test_split.jsonl",
+        "record_index": 15,
+        "scenario_id": "first_match_scan_4#15",
+        "scenario_label": "first_match_scan_4 #15",
+        "program_name": "first_match_scan_4",
+        "verifier_mode": "state_diff",
+        "candidate_mode": "program_global",
+        "candidate_limit": 32,
+        "budgets": [
+          2,
+          4,
+          8,
+          12
+        ],
+        "choose_next_step": {
+          "program_name": "first_match_scan_4",
+          "verifier_mode": "state_diff",
+          "ranker": "learned",
+          "winner": {
+            "rank": 1,
+            "instruction_text": "JZ FOUND_0",
+            "source": "current_ip",
+            "verified": true,
+            "matches_first_target_state": true,
+            "error_type": null,
+            "notes": []
+          },
+          "top_candidates": [
+            {
+              "rank": 1,
+              "instruction_text": "JZ FOUND_0",
+              "source": "current_ip",
+              "verified": true,
+              "matches_first_target_state": true,
+              "error_type": null,
+              "notes": []
+            },
+            {
+              "rank": 2,
+              "instruction_text": "READ R2, input[1]",
+              "source": "next_ip",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            },
+            {
+              "rank": 3,
+              "instruction_text": "CMP R2, R1",
+              "source": "prev_ip",
+              "verified": true,
+              "matches_first_target_state": true,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch"
+              ]
+            },
+            {
+              "rank": 4,
+              "instruction_text": "JZ FOUND_1",
+              "source": "program_scan",
+              "verified": true,
+              "matches_first_target_state": true,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch"
+              ]
+            },
+            {
+              "rank": 5,
+              "instruction_text": "JZ FOUND_2",
+              "source": "program_scan",
+              "verified": true,
+              "matches_first_target_state": true,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch"
+              ]
+            },
+            {
+              "rank": 6,
+              "instruction_text": "READ R1, input[4]",
+              "source": "program_scan",
+              "verified": true,
+              "matches_first_target_state": true,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch"
+              ]
+            },
+            {
+              "rank": 7,
+              "instruction_text": "READ R2, input[0]",
+              "source": "program_scan",
+              "verified": true,
+              "matches_first_target_state": true,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch"
+              ]
+            },
+            {
+              "rank": 8,
+              "instruction_text": "READ R2, input[2]",
+              "source": "program_scan",
+              "verified": false,
+              "matches_first_target_state": false,
+              "error_type": null,
+              "notes": [
+                "instruction_mismatch",
+                "target_mismatch",
+                "state_diff_mismatch"
+              ]
+            }
+          ]
+        },
+        "solve_with_budget_curve": [
+          {
+            "node_budget": 2,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": false,
+                "nodes_explored": 2,
+                "budget_exhausted": true,
+                "successful_path": []
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "JZ FOUND_0",
+                  "READ R2, input[1]"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "JZ FOUND_0",
+                  "READ R2, input[1]"
+                ]
+              }
+            ]
+          },
+          {
+            "node_budget": 4,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": false,
+                "nodes_explored": 4,
+                "budget_exhausted": true,
+                "successful_path": []
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "JZ FOUND_0",
+                  "READ R2, input[1]"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "JZ FOUND_0",
+                  "READ R2, input[1]"
+                ]
+              }
+            ]
+          },
+          {
+            "node_budget": 8,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": true,
+                "nodes_explored": 6,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R1, input[4]",
+                  "READ R2, input[1]"
+                ]
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "JZ FOUND_0",
+                  "READ R2, input[1]"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "JZ FOUND_0",
+                  "READ R2, input[1]"
+                ]
+              }
+            ]
+          },
+          {
+            "node_budget": 12,
+            "policies": [
+              {
+                "policy": "none",
+                "solved": true,
+                "nodes_explored": 6,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "READ R1, input[4]",
+                  "READ R2, input[1]"
+                ]
+              },
+              {
+                "policy": "heuristic",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "JZ FOUND_0",
+                  "READ R2, input[1]"
+                ]
+              },
+              {
+                "policy": "learned",
+                "solved": true,
+                "nodes_explored": 2,
+                "budget_exhausted": false,
+                "successful_path": [
+                  "JZ FOUND_0",
+                  "READ R2, input[1]"
+                ]
+              }
+            ]
+          }
+        ],
+        "failure_demo": {
+          "category": "budget_or_rank_order",
+          "first_hit_rank": 1,
+          "details": {
+            "program_name": "first_match_scan_4",
+            "solved": false,
+            "successful_path": [],
+            "nodes_explored": 2,
+            "budget_exhausted": true,
+            "attempts": [
+              {
+                "instruction_text": "READ R1, input[4]",
+                "source": "program_scan",
+                "expected_instruction": "JZ FOUND_0",
+                "error_type": null,
+                "notes": [
+                  "instruction_mismatch"
+                ]
+              },
+              {
+                "instruction_text": "READ R1, input[4]",
+                "source": "program_scan",
+                "expected_instruction": "READ R2, input[1]",
+                "error_type": null,
+                "notes": [
+                  "instruction_mismatch",
+                  "target_mismatch"
+                ]
+              }
+            ]
+          }
+        },
+        "compare_policies": {
+          "policies": [
+            {
+              "policy": "none",
+              "program_name": "first_match_scan_4",
+              "solved": true,
+              "successful_path": [
+                "READ R1, input[4]",
+                "READ R2, input[1]"
+              ],
+              "nodes_explored": 6,
+              "budget_exhausted": false,
+              "attempts": [
+                {
+                  "instruction_text": "READ R1, input[4]",
+                  "source": "program_scan",
+                  "expected_instruction": "JZ FOUND_0",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "READ R1, input[4]",
+                  "source": "program_scan",
+                  "expected_instruction": "READ R2, input[1]",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "READ R2, input[0]",
+                  "source": "program_scan",
+                  "expected_instruction": "READ R2, input[1]",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "CMP R2, R1",
+                  "source": "program_scan",
+                  "expected_instruction": "READ R2, input[1]",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "JZ FOUND_0",
+                  "source": "prev_ip",
+                  "expected_instruction": "READ R2, input[1]",
+                  "error_type": null,
+                  "notes": [
+                    "instruction_mismatch",
+                    "target_mismatch"
+                  ]
+                },
+                {
+                  "instruction_text": "READ R2, input[1]",
+                  "source": "current_ip",
+                  "expected_instruction": "READ R2, input[1]",
+                  "error_type": null,
+                  "notes": []
+                }
+              ]
+            },
+            {
+              "policy": "heuristic",
+              "program_name": "first_match_scan_4",
+              "solved": true,
+              "successful_path": [
+                "JZ FOUND_0",
+                "READ R2, input[1]"
+              ],
+              "nodes_explored": 2,
+              "budget_exhausted": false,
+              "attempts": [
+                {
+                  "instruction_text": "JZ FOUND_0",
+                  "source": "current_ip",
+                  "expected_instruction": "JZ FOUND_0",
+                  "error_type": null,
+                  "notes": []
+                },
+                {
+                  "instruction_text": "READ R2, input[1]",
+                  "source": "current_ip",
+                  "expected_instruction": "READ R2, input[1]",
+                  "error_type": null,
+                  "notes": []
+                }
+              ]
+            },
+            {
+              "policy": "learned",
+              "program_name": "first_match_scan_4",
+              "solved": true,
+              "successful_path": [
+                "JZ FOUND_0",
+                "READ R2, input[1]"
+              ],
+              "nodes_explored": 2,
+              "budget_exhausted": false,
+              "attempts": [
+                {
+                  "instruction_text": "JZ FOUND_0",
+                  "source": "current_ip",
+                  "expected_instruction": "JZ FOUND_0",
+                  "error_type": null,
+                  "notes": []
+                },
+                {
+                  "instruction_text": "READ R2, input[1]",
+                  "source": "current_ip",
+                  "expected_instruction": "READ R2, input[1]",
+                  "error_type": null,
+                  "notes": []
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

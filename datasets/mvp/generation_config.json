@@ -1,0 +1,48 @@
+{
+  "seed": 7,
+  "output_dir": "datasets/mvp",
+  "single_step_limit": 128,
+  "next_2_steps_limit": 64,
+  "short_trace_limit": 64,
+  "terminal_state_limit": 64,
+  "train_ratio": 0.7,
+  "val_ratio": 0.15,
+  "test_ratio": 0.15,
+  "max_steps": 64,
+  "split_strategy": "program_family_level",
+  "split_key": "split_family",
+  "dataset_types": [
+    "single_step",
+    "next_2_steps",
+    "short_trace",
+    "terminal_state"
+  ],
+  "task_library_programs": [
+    "add_two_numbers",
+    "store_then_load",
+    "branch_on_equality",
+    "branch_non_equal_flag",
+    "sum_three_constants",
+    "countdown_to_zero",
+    "countdown_steps",
+    "pair_sum_scan_3",
+    "midpoint_search_4",
+    "first_match_scan_4",
+    "fib_iterative_5",
+    "weighted_sum_3"
+  ],
+  "task_library_split_families": [
+    "add_two_numbers_family",
+    "store_then_load_family",
+    "branch_on_equality_family",
+    "branch_non_equal_flag_family",
+    "sum_three_constants_family",
+    "countdown_to_zero_family",
+    "countdown_steps_family",
+    "pair_sum_scan_3_family",
+    "midpoint_search_4_family",
+    "first_match_scan_4_family",
+    "fib_iterative_5_family",
+    "weighted_sum_3_family"
+  ]
+}

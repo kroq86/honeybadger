@@ -1,0 +1,91 @@
+{
+  "phase": "phase2",
+  "status": "scaffold_frozen",
+  "selected_model": {
+    "primary": "HuggingFaceTB/SmolLM2-135M-Instruct",
+    "fallback": "microsoft/Phi-3-mini-4k-instruct",
+    "training_mode": "lora",
+    "trust_remote_code": false
+  },
+  "paths": {
+    "lora_config": "training/configs/lora_next2_slots.json",
+    "eval_config": "training/configs/eval_phase2_next2_slots.json",
+    "execution_manifest": "datasets/next2_slots_benchmark_v1/manifest.json",
+    "sft_manifest": "training_data/sft_next2_slots_v1/manifest.json",
+    "requirements_path": "training/requirements-phase2.txt",
+    "train_dataset_path": "training_data/sft_next2_slots_v1/train.jsonl",
+    "output_dir": "training_runs/lora_next2_slots_v1",
+    "benchmark_dataset_root": "datasets/next2_slots_benchmark_v1"
+  },
+  "execution_benchmark": {
+    "stages": [
+      "next_2_steps_slots"
+    ],
+    "metrics": [
+      "exact_match",
+      "repaired_exact_match",
+      "avg_field_accuracy"
+    ],
+    "runner_defaults": {
+      "train_shots": 0,
+      "eval_limit": 5,
+      "num_predict": 192,
+      "max_trace_steps": 6,
+      "timeout_seconds": 12
+    },
+    "dataset_types": [
+      "next_2_steps_slots"
+    ],
+    "split_counts": {
+      "next_2_steps_slots": {
+        "train": 22,
+        "val": 1,
+        "test": 12
+      }
+    }
+  },
+  "sft_export": {
+    "format": "plain_prompt_completion_v1",
+    "stages": [
+      "next_2_steps_slots"
+    ],
+    "split_counts": {
+      "train": 22,
+      "val": 1,
+      "test": 12
+    },
+    "prompt_drift_policy": "reuse_eval_prompts_exactly",
+    "completion_policy": "reuse_eval_targets_exactly"
+  },
+  "guardrails": {
+    "required_training_stack": [
+      "torch",
+      "transformers",
+      "peft",
+      "accelerate",
+      "datasets"
+    ],
+    "lora": {
+      "max_seq_length": 512,
+      "per_device_train_batch_size": 1,
+      "gradient_accumulation_steps": 8,
+      "learning_rate": 0.0002,
+      "num_train_epochs": 2,
+      "lora_r": 8,
+      "lora_alpha": 16,
+      "lora_dropout": 0.05,
+      "lora_target_modules": [
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "o_proj"
+      ]
+    },
+    "run_guardrails": {
+      "max_wall_time_minutes": 45,
+      "max_checkpoints_to_keep": 2,
+      "save_strategy": "epoch",
+      "first_run_purpose": "next2_slots"
+    }
+  }
+}
