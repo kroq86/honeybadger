@@ -109,7 +109,7 @@ jobs:
           )
           assert exported["status"] == "success", exported
 
-          gated = vmbench_gate_summary(".ci-smoke/base_summary.json")
+          gated = vmbench_gate_summary(summary_path=".ci-smoke/base_summary.json")
           assert gated["status"] == "success", gated
 
           compared = vmbench_compare_reports(

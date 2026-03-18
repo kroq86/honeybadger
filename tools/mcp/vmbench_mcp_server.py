@@ -67,8 +67,12 @@ def _unwrap_cursor_args(args: tuple, kwargs: dict) -> tuple[tuple, dict, dict]:
                 return (tuple(a) if isinstance(a, list) else (a,) if a is not None else (),), (k if isinstance(k, dict) else {}), meta
             # Otherwise treat the whole dict as kwargs for the tool
             return (), payload, meta
-        # Single positional we couldn't convert: call tool with no args (fixes "takes 0 positional but 1 given")
-        return (), {}, meta
+        # Keep primitive/single-value positionals intact for direct Python calls like
+        # vmbench_gate_summary("path/to/summary.json"). We only discard placeholder
+        # empty values that Cursor may emit for no-arg tools.
+        if one in (None, {}):
+            return (), {}, meta
+        return args, kwargs, meta
     # Envelope as kwargs (Cursor sends 0 positional, 2 kwargs: "args" and "kwargs")
     if len(args) == 0 and "args" in kwargs and "kwargs" in kwargs:
         a, k = kwargs.get("args"), kwargs.get("kwargs")
