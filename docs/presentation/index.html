@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>vmbench | A System That Shows Its Work</title>
+  <title>vmbench | Formal VM Benchmark and Inspectable Runtime</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css" id="theme">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,14 +18,14 @@
         <div class="hero">
           <div>
             <div class="eyebrow">Not magic. It shows what it is doing.</div>
-            <h1>vmbench<br><span>A System That Shows Its Work</span></h1>
+            <h1>vmbench<br><span>A Formal VM Benchmark That Shows Its Work</span></h1>
             <div class="deck-actions">
               <a class="deck-button primary" href="../">Open live demo</a>
               <a class="deck-button" href="https://github.com/kroq86/honeybadger">Open GitHub</a>
             </div>
             <p class="subtitle">
               Formal VM benchmark + inspectable runtime:
-              pure-neural multi-step execution was weak here, but verifier-guided search under bounded compute became strong, visible, and useful.
+              on this benchmark, pure-neural multi-step execution was weak, while verifier-guided search with ranking was strong and inspectable under bounded compute.
             </p>
             <p class="subnote">
               In academic language, this sits near <code>test-time scaling</code>, <code>verifier-guided search</code>,
@@ -49,7 +49,7 @@
               </div>
               <div class="mini-cell">
                 <span>product idea</span>
-                <strong>a tool that explains itself</strong>
+                <strong>a runtime that exposes search, verification, and budget use</strong>
               </div>
             </div>
           </div>
@@ -87,7 +87,7 @@
         </div>
         <div class="section-note">
           So the project changed direction. Instead of hidden “thinking”, it became visible step-by-step problem solving.
-          The central thesis is simple: <strong>pure-neural multi-step execution was weak on this setup</strong>,
+          The central thesis is narrow: <strong>on this benchmark and the stated splits, pure-neural multi-step execution was weak</strong>,
           while <strong>verifier-guided search with ranking was strong and inspectable under bounded compute</strong>.
         </div>
         <aside class="notes">
@@ -174,7 +174,7 @@
         <div class="section-note">
           This is the whole point: the process is visible.
           More formally, the user is seeing a small <strong>verifier-guided search</strong> loop instead of one opaque generation.
-          Public shape: <strong>MCP-first</strong> runtime, <strong>CLI-second</strong> benchmark surface.
+          Public surface: <strong>MCP-first</strong> runtime and inspection layer, with <strong>CLI</strong> as the secondary benchmark/eval surface.
         </div>
         <aside class="notes">
           This is the core product framing.
@@ -210,7 +210,7 @@
           </div>
           <div class="section-note">
             This slide uses the same real data as the public demo. It is not fake sample text.
-          You can think of it as a product surface for <strong>budgeted search</strong>,
+          You can think of it as the public runtime surface for <strong>budgeted search</strong>,
           <strong>candidate ranking</strong>, and <strong>step verification</strong>.
           </div>
         </div>
@@ -321,7 +321,7 @@
         </div>
         <div class="section-note">
           That hidden gap is exactly what this project helps us see instead of cover up.
-          This also matches a warning from recent work on <strong>scaling flaws of verifier-guided search</strong>:
+          This is also a practical warning in our own results:
           a system can look strong on easier slices while still depending on shortcuts.
         </div>
         <aside class="notes">
@@ -351,7 +351,7 @@
         <div class="quote-card">
           <p class="lead">
             The best story here is not “the AI became magical”.<br>
-            The best story is “we built a system that shows its work.”
+            The best story is “we built a benchmark-and-runtime stack that shows its work.”
           </p>
         </div>
         <aside class="notes">
@@ -384,7 +384,7 @@
           </div>
         </div>
         <div class="section-note">
-          The next step is not another random LoRA run.
+          The next step is not another random training run.
           The next step is a harder transfer test while staying honest about <strong>generalization</strong>,
           <strong>search-time compute</strong>, and <strong>shortcut dependence</strong>.
         </div>
@@ -415,7 +415,7 @@
             <h3>What we built</h3>
             <p>candidate generation + ranking + verification + budgeted search</p>
             <p>MCP-first tools for visible reasoning, CLI-second surface</p>
-            <p>a product surface for controllable and inspectable search-time compute</p>
+            <p>a public runtime surface for controllable and inspectable search-time compute on this benchmark</p>
           </div>
         </div>
         <div class="quote-card">

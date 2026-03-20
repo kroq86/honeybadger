@@ -1,6 +1,6 @@
 # vmbench Presentation
 
-Standalone reveal.js presentation for vmbench as an inspectable reasoning runtime. The narrative and QA state contributions and limitations clearly.
+Standalone reveal.js presentation for vmbench as a formal VM benchmark and inspectable runtime. The narrative and QA state contributions and limitations clearly.
 
 ## Open
 

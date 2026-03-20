@@ -3,31 +3,31 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>vmbench | Inspectable Reasoning Runtime</title>
+    <title>vmbench | Formal VM Benchmark and Inspectable Runtime</title>
     <meta
       name="description"
-      content="vmbench turns reasoning into a visible process: inspect next-step ranking, compare policies under budget, and see why a search run fails."
+      content="vmbench is a formal VM benchmark and inspectable runtime for verifier-guided search: inspect ranked candidates, compare policies under fixed budget, and review structured failure traces."
     />
     <meta
       name="keywords"
-      content="inspectable reasoning,mcp runtime,budgeted search,verified execution,llm runtime"
+      content="formal vm benchmark,inspectable runtime,mcp runtime,budgeted search,verifier-guided search"
     />
     <meta name="theme-color" content="#0e1726" />
     <meta name="robots" content="index,follow" />
     <link rel="canonical" href="https://kroq86.github.io/honeybadger/" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="vmbench | Inspectable Reasoning Runtime" />
+    <meta property="og:title" content="vmbench | Formal VM Benchmark and Inspectable Runtime" />
     <meta
       property="og:description"
-      content="An MCP-first reasoning runtime with verified next-step choice, budget control, and failure explanations."
+      content="A formal VM benchmark and inspectable MCP/CLI runtime for verifier-guided search under bounded compute."
     />
     <meta property="og:url" content="https://kroq86.github.io/honeybadger/" />
     <meta property="og:site_name" content="vmbench" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="vmbench | Inspectable Reasoning Runtime" />
+    <meta name="twitter:title" content="vmbench | Formal VM Benchmark and Inspectable Runtime" />
     <meta
       name="twitter:description"
-      content="Watch reasoning under budget, compare policies, and inspect verified step selection."
+      content="Formal VM benchmark plus inspectable verifier-guided runtime: compare policies under budget and inspect structured step selection."
     />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="manifest" href="./site.webmanifest" />
@@ -38,7 +38,7 @@
         "name": "vmbench",
         "codeRepository": "https://github.com/kroq86/honeybadger",
         "programmingLanguage": "Python",
-        "description": "Inspectable reasoning runtime and VM benchmark toolkit for language models.",
+        "description": "Formal VM benchmark and inspectable verifier-guided runtime for language models.",
         "license": "https://github.com/kroq86/honeybadger"
       }
     </script>
@@ -46,13 +46,17 @@
   <body>
     <main class="page">
       <section class="hero">
-        <p class="eyebrow">MCP reasoning runtime</p>
+        <p class="eyebrow">Formal VM benchmark + inspectable runtime</p>
         <h1>vmbench</h1>
         <p class="lede">
-          Not another chat demo. This page shows a reasoning runtime that ranks candidate steps, verifies them, spends a search budget, and tells you exactly why it failed when it misses.
+          vmbench is a formal execution benchmark built around a deterministic toy ISA, a reference VM, and verifier-guided search. This page shows the inspectable runtime surface: ranked candidate steps, bounded search, and structured failure traces on benchmark records.
+        </p>
+        <p class="lede">
+          Core claim: on this benchmark, pure-neural multi-step execution is weak, while explicit verifier-guided search with ranking is strong and inspectable under bounded compute.
         </p>
         <div class="actions">
           <a href="./presentation/" class="button primary">Open Presentation</a>
+          <a href="https://github.com/kroq86/honeybadger/blob/main/whitepaper.md" class="button">Read Whitepaper</a>
           <a href="https://github.com/kroq86/honeybadger" class="button">View on GitHub</a>
           <a href="https://github.com/kroq86/honeybadger/pkgs/container/vmbench" class="button">GHCR Image</a>
         </div>
@@ -69,7 +73,7 @@
         </article>
         <article class="card">
           <h2>Explain Failure</h2>
-          <p>Failures come back as `budget_or_rank_order`, verifier mismatch, or candidate miss with concrete local evidence.</p>
+          <p>Failures surface as structured traces with node count, attempted instructions, expected instruction, and mismatch notes. This demo includes a `budget_or_rank_order` example.</p>
         </article>
       </section>
 
@@ -123,14 +127,19 @@
       <section class="content">
         <h2>What You Are Looking At</h2>
         <p>
-          This demo is driven by a real MCP payload, not mock copy. One benchmark record is loaded, candidate steps are ranked,
-          a verifier checks transitions, and multiple policies are run under the same node budget.
+          This demo is driven by a real runtime payload bundled from vmbench outputs. It loads benchmark records from the held-out two-step split, ranks candidate steps,
+          checks transitions with the verifier, and compares multiple policies under the same node budget.
         </p>
 
         <h2>Why This UX Is Different</h2>
         <p>
           The point is not to look magical. The point is to make reasoning controllable, observable, and trustworthy enough
           that a user can see progress, compare search policies, and understand a miss.
+        </p>
+
+        <h2>What The Benchmark Shows</h2>
+        <p>
+          The current whitepaper reports that on a held-out two-step test, unranked search solves 11/31 records (0.3548) while heuristic and learned ranking solve 30/31 (0.9677) under the same node budget. On a harder split, learned ranking reaches 222/224 (0.9911). These are benchmark-specific results, not broad claims about general reasoning.
         </p>
 
         <h2>Runtime Entry Points</h2>
