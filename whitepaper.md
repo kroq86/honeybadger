@@ -175,9 +175,25 @@ The strongest surviving story is not only benchmark improvement but a different 
 
 This makes reasoning **inspectable**. The user can see which options existed, which one won, what was checked, how much budget was spent, and why the system failed when it failed. In that sense, vmbench is not just a benchmark file and a table of metrics; it is also a small runtime where search, verification, and budget are visible control surfaces.
 
-### 2.3 Related-Work Positioning
+### 2.3 Related Work
 
-vmbench sits closest to work on **verifier-guided search**, **test-time scaling**, and **formal or execution-style evaluation** for language models. It is less aligned with broad “reasoning” papers that do not involve explicit candidate verification, bounded search, or formal step semantics. The relevant comparison class is therefore work where correctness is checked against an external specification or verifier, rather than papers about reasoning style, reward shaping, or generic chain-of-thought alone.
+#### 2.3.1 Formal Execution Benchmarks
+
+vmbench is closest to work that evaluates reasoning systems against formal execution semantics rather than open-ended textual plausibility. In that comparison class, the relevant baseline is not generic chain-of-thought or reward-shaped reasoning, but benchmarks where correctness can be checked against an external specification or executable semantics. Our setup follows that tradition by using a deterministic toy ISA, a reference VM, and program-family-level splits to measure whether a system can make semantically correct stepwise progress under controlled conditions.
+
+At the same time, vmbench is narrower than a broad reasoning benchmark and more operational than a pure formal-specification artifact. The goal is not to show that a model writes convincing explanations about execution, but to measure whether a system can follow machine-like state transitions and expose those decisions through a visible runtime. This makes vmbench best read as a benchmark-and-runtime contribution rather than a general claim about neural execution.
+
+#### 2.3.2 Verifier-Guided Search and Verification Granularity
+
+The method sits most naturally in the line of work on verifier-guided search, test-time scaling, and compute-bounded reasoning. The main lesson from that line of work, and from our own experiments, is that the verifier is not just a scoring add-on: verification granularity is itself a design variable. Full-step, final-state-only, state-diff, and other partial verification schemes can change search quality under the same compute budget, so the benchmark must be discussed together with the verification policy that defines success and failure.
+
+vmbench adopts the conservative interpretation of this space. We keep the search loop explicit, treat learned components as assist modules rather than replacements for the full system, and separate benchmark wins from stronger claims about internal reasoning. This positioning matters because verifier-guided systems can look strong on easier slices while still depending on favorable local signals or shortcut structure.
+
+#### 2.3.3 Ranking, Budgeted Search, and Inspectable Runtime
+
+A second nearby line of work concerns ranking quality under fixed search budgets. In vmbench, search order matters much more than a one-shot next-step guess: heuristic and learned ranking dramatically improve solve rate over unranked search on the reported splits, and learned ranking matters most when budget is tight. That places the project closer to work on compute allocation and speculative or search-assisted inference than to papers that attribute gains to a hidden internal search process.
+
+What distinguishes vmbench from a pure ranking benchmark is that the same search loop is exposed as a runtime surface. The user can inspect candidate choice, see verification outcomes, track budget use, and request failure explanations. For that reason, the strongest comparison class is not just “reasoning benchmarks,” but systems that combine formal checking, bounded search, and observable decision flow.
 
 ### 2.4 Academic Positioning
 
@@ -222,16 +238,39 @@ The reference VM parses programs, executes them step-by-step, and produces canon
 - **Splits:** Program-family-level; all examples sharing a `split_family` go to exactly one of train / val / test to prevent leakage.
 - **Generation:** Seed 7, max 64 steps per program; see dataset card for exact counts and file layout.
 
-### 3.3 Search-Assisted Pipeline
+### 3.3 Candidate Generation
 
-1. **Candidate generation:** Produce a small set of candidate next steps (e.g., next instruction or next state).
-2. **Ranking:** Order candidates by a heuristic (e.g., simple rules) or a learned ranker trained on search traces.
-3. **Verification:** For each candidate in order, run the reference VM (or transition checker) to accept or reject.
-4. **Budget:** Stop after a fixed number of explored nodes (node budget); return the first verified solution or failure.
+Candidate generation converts one execution state into a small search frontier of plausible next instructions. In the current implementation, candidates are produced either from a strict local neighborhood around the instruction pointer or from a broader program scan, with duplicate instructions removed before ranking (`candidate_generator.py`). Each candidate carries its instruction text, a provisional rank, and a source label such as `current_ip`, `jump_target`, or `next_ip`, which makes later search behavior inspectable.
 
-The user-facing runtime exposes: choose next step, solve with budget, explain failure, compare policies (no ranker vs. heuristic vs. learned).
+The input to this stage is the current VM context: program, instruction pointer, machine state, and any benchmark-side metadata needed to define the current step. The output is a compact candidate set that can be passed to the verifier and to the ranking policy. This stage is intentionally conservative: it does not try to solve the task on its own, but instead narrows the branching factor so that explicit verification and ranking can operate under a fixed compute budget.
 
-### 3.4 Training (Learned Ranker)
+Operationally, candidate generation separates “what might be worth trying” from “what is actually valid.” That separation matters for claim discipline. The model or heuristic is allowed to propose, but correctness is not awarded at proposal time.
+
+### 3.4 Transition Verification
+
+Transition verification is the semantic core of the system. Given a program, an input state, and a candidate instruction, the verifier replays the step against the reference VM and returns both an execution result and a structured verdict, including mismatch notes such as `instruction_mismatch`, `target_mismatch`, or `state_diff_mismatch` (`reference_vm.py`, `vm_transition_verifier.py`). This keeps correctness outside the model: the model may propose or prioritize candidates, but acceptance is determined by the formal execution contract, not by fluent text generation.
+
+The input to this stage is a candidate plus the current program state. The output is a semantic decision together with structured failure information that explains why the candidate failed. The verifier also supports multiple verdict modes, including exact intermediate-state matching and state-difference comparison, which makes verification granularity an explicit design variable rather than a hidden assumption.
+
+This is also where vmbench differs most clearly from purely textual reasoning setups. The system is not rewarded for sounding right about the next step. It is rewarded only if the transition matches the formal semantics of the VM.
+
+### 3.5 Ranking
+
+Ranking determines the order in which candidate instructions consume search budget. The system supports three policies: no ranker, a heuristic ranker, and a learned ranker trained on search traces; all three operate over the same candidate set and the same verifier-backed search loop (`branch_ranker.py`, `learned_branch_ranker.py`, `search_runner.py`). The role of ranking is not to replace verification, but to decide which candidates deserve verification first.
+
+The input to ranking is the candidate set plus contextual features derived from the current execution state and search trace. The output is an ordered list of candidates. This separation is important for interpretation: ranking changes search efficiency and solve rate without changing the underlying semantics of the task.
+
+Empirically, this is one of the strongest signals in the project. The main benchmark lift comes not from eliminating the verifier, but from improving candidate order under a fixed budget. The learned component should therefore be read as an assist module inside an explicit search loop, not as a complete replacement for the formal machinery.
+
+### 3.6 Budgeted Search Runtime
+
+The runtime composes candidate generation, ranking, and verification into a bounded search procedure over short execution horizons. For each record, the system generates first-step candidates, ranks them, verifies them one by one, and then repeats the same process for the next step if the current step is accepted (`search_runner.py`). The search stops as soon as it finds a verified path or exhausts the node budget, and it records the attempt history, explored-node count, and whether the budget was exhausted.
+
+The user-facing outputs follow directly from this design. A user can inspect the next-step choice, compare policies, solve one record under a fixed budget, and request a structured failure explanation. These surfaces are exposed through the CLI and MCP entry points described earlier, with product-facing wrappers in `vmbench_product_surface.py` and `vmbench_demo_runtime.py`.
+
+This runtime framing is one of the main reasons vmbench is more than a benchmark file plus a metrics table. Budget, verification outcome, candidate order, and failure mode are all explicit parts of the user-visible contract.
+
+### 3.7 Training (Learned Ranker)
 
 The learned ranker is trained on trace-derived supervision from the benchmark. Training uses LoRA (no full fine-tune), a conservative profile (small sequence length, small batch size, gradient accumulation), and the same dataset/splits as the benchmark. Base model path and config are documented in the training README and freeze manifest. Training and eval results depend on dataset, splits, and compute; these are documented in the repo.
 
