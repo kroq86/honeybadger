@@ -6,93 +6,17 @@
 
 ## Abstract
 
-We present vmbench: a formal virtual-machine execution benchmark and toolkit for testing whether language models can follow machine-like semantics on synthetic execution tasks. **The central thesis of this report is narrow and defensible:** on this benchmark, **pure-neural multi-step execution is weak**, while **explicit verifier-guided search with ranking is strong and inspectable under bounded compute**. **Below, the Foundations section inlines** the origin narrative and repository map. The main contributions are (1) a small, deterministic toy ISA (AI-Assembly v0) with a reference VM and canonical trace format; (2) synthetic dataset generation with program-family-level splits to avoid leakage; (3) a search-assisted reasoning pipeline—candidate generation, verification, and heuristic or learned ranking—under a fixed node budget; and (4) an inspectable runtime surface (MCP and CLI) that exposes options, verification, and failure modes to the user. We do not claim that latent symbolic execution emerged in the model weights. We show that explicit search plus transition verification and ranking yields large gains over unranked search on held-out and harder splits in our benchmark, and that a learned ranker can match or slightly exceed a heuristic ranker under tight budgets. Results are reported on the current benchmark and splits; generalization to other ISAs or task distributions is untested. The repo provides code, data, and instructions to reproduce the main results.
+We present vmbench: a formal virtual-machine execution benchmark and inspectable reasoning runtime for testing whether language models can follow machine-like semantics on synthetic execution tasks. **The central thesis of this report is narrow and defensible:** on this benchmark, **pure-neural multi-step execution is weak**, while **explicit verifier-guided search with ranking is strong and inspectable under bounded compute**. The main contributions are (1) a small, deterministic toy ISA (AI-Assembly v0) with a reference VM and canonical trace format; (2) synthetic dataset generation with program-family-level splits to avoid leakage; (3) a search-assisted reasoning pipeline—candidate generation, verification, and heuristic or learned ranking—under a fixed node budget; and (4) an inspectable runtime surface (MCP and CLI) that exposes options, verification, and failure modes to the user. We do not claim that latent symbolic execution emerged in the model weights. We show that explicit search plus transition verification and ranking yields large gains over unranked search on held-out and harder splits in our benchmark, and that a learned ranker can match or slightly exceed a heuristic ranker under tight budgets. Results are reported on the current benchmark and splits; generalization to other ISAs or task distributions is untested. The repo provides code, data, and instructions to reproduce the main results.
 
 **Keywords:** execution benchmark, verifier-guided search, test-time scaling, budgeted search, inspectable reasoning.
 
 ---
 
-## Foundations (origin and repo map — text inlined here)
+## Foundations
 
-### Origin: idea line that led to vmbench
+vmbench grew out of an attempt to study whether language models could internalize low-level execution semantics rather than only describe them. The strongest outcome of that line of work in this repository is not evidence for a latent internal executor in the model weights, but a more defensible artifact: a formal VM benchmark, deterministic step verification, and verifier-guided search under bounded compute. That shift from speculative internal execution to explicit semantic checking defines the paper’s scope and claim boundary.
 
-Compressed narrative from the project’s origin discussion: the stack was imagined as evolving from **AI DSL → full language** (analogy: COBOL/SQL/MATLAB/Verilog: domain → DSL → language). Today’s stack is a **layer cake** (Python + prompts + JSON + agents + YAML), not one abstraction level. A unified AI-native layer would natively combine **intent, tools, state, verification, execution**. Execution **inside** the model (Sudoku, in-context algorithms) suggests **latent programs** and neural interpretation—not the same as calling Python. Mechanistic interpretability analogies: registers in the residual stream, attention as routing, behavior like **bytecode / opcodes**. Training through a **low-level VM** (registers, flags, memory, **step traces**) was proposed instead of Python-as-tool, because operational semantics need observable state transitions. **AI-Assembly**: minimal ISA and curriculum single-step → multi-step trace → latent → synthesis. Honest outcome in this repo: a **full internal executor in weights is not established**; what ships is a **benchmark VM, traces, and verifier-guided search**.
-
-| Stage in the origin thread | Essence |
-|----------------------------|---------|
-| AI DSL → full language | Domain → DSL → language; today = fragmented stack, not one language. |
-| What one language should carry | Intent, tools, state, **verification**, execution. |
-| In-model execution | Iterative state; latent program / neural interpreter hypothesis. |
-| Interpretability layer | Residual “registers”, attention as micro-ops, opcode-like analogies. |
-| Why not Python as the teaching tool | Too high-level; need **stepwise state** for semantics. |
-| VM curriculum | single_step → traces → … → synthesis. |
-| Closing formulation | *Train LLMs in a low-level VM toward stable algorithms* — here, **external verifier + search** compensates where pure neural multi-step failed. |
-
-**Naive-Bayes-style topic masses (must sum to 1 for consistency):** P(AI language / in-model execution)=**0.41**; P(language design / declarativity)=**0.26**; P(interpretability / latent)=**0.17**; P(agents / tools)=**0.10**; P(Lisp / symbolic history)=**0.06**. **Check: 0.41+0.26+0.17+0.10+0.06 = 1.00.**
-
-**Intent masses (explicit fourth bucket so Σ=1):** P(design new model)=**0.48**; P(architecture exploration)=**0.29**; P(implementation)=**0.15**; P(other / mixed)=**0.08**. **Check: 0.48+0.29+0.15+0.08 = 1.00.**
-
-**Research-potential scores (calculable mean):** novelty 7, science 8, practical 6, feasibility 7, publication 7 → **(7+8+6+7+7)/5 = 7.0 / 10**, not “about 7”. Lifting toward 9 needs provable internal step execution or clear reasoning-benchmark gain.
-
-How the origin maps to **this** codebase:
-
-| Origin idea | Where it lives in the repo |
-|-------------|----------------------------|
-| Minimal ISA, registers, flags, memory, traces | `ISA_SPEC.md`, `reference_vm.py` |
-| (state, instr) → next state, traces | Dataset stages `single_step`, `next_2_steps`, `short_trace` via `dataset_pipeline.py` |
-| Verifiable low-level step | `vm_transition_verifier.py` |
-| Pure neural multi-step weak | Negative result on `next_2_steps`; `curriculum_gate.py`, README |
-| Deterministic semantics + test-time search | `search_runner.py`, rankers, MCP — verifier-guided search |
-
-One-line summary: from “COBOL for AI” and in-model Sudoku to **transparent VM + traces**; this repo is the **benchmark and measured outcome**—strong story is **checkable transitions and budgeted search**, not a proof of latent CPU.
-
-### Repository map: entry points and layout
-
-**Entry points**
-
-| Goal | Path |
-|------|------|
-| CLI: generate, eval, gate, compare, status | `vmbench_cli.py` |
-| MCP server | `tools/mcp/vmbench_mcp_server.py`, `tools/mcp/README.md` |
-| ISA + VM | `ISA_SPEC.md`, `reference_vm.py` |
-| Generate benchmark JSONL | `dataset_pipeline.py` → `datasets/mvp/` |
-| Local LLM eval → summary.json | `baseline_trainer.py` (under `reports/`, often gitignored) |
-| Curriculum gates | `curriculum_gate.py` |
-| Budgeted search, solve rate | `search_runner.py` |
-| One-step correctness | `vm_transition_verifier.py` |
-| Search candidates | `candidate_generator.py` |
-| Ranking | `branch_ranker.py`, `learned_branch_ranker.py` |
-| LoRA | `training/train_lora.py` |
-| Checkpoint eval | `training/eval_checkpoint.py` |
-| Ranker train/eval | `training/train_search_ranker.py`, `training/eval_search_ranker.py` |
-| SFT export | `sft_export.py`, `training/export_sft.py` |
-
-**Layers:** VM — `ISA_SPEC.md`, `reference_vm.py`. Data gen — `dataset_pipeline.py` (MVP stages above), plus `synthesis_dataset.py`, `repair_dataset.py`, `latent_probe_dataset.py`, `ordered_conditionals_dataset.py`. Eval — `baseline_trainer.py`, `curriculum_gate.py`. Search-assist — `vm_transition_verifier.py`, `candidate_generator.py`, `branch_ranker.py`, `learned_branch_ranker.py`, `search_runner.py`, `search_trace_export.py`, `tools/build_search_benchmark.py`. Training folder — `train_lora.py`, `eval_checkpoint.py`, `eval_search_ranker.py`, `train_search_ranker.py`, `check_env.py`, `export_sft.py`, probe and `next2_*` scripts, `configs/*.json`. Product — `vmbench_product_surface.py`, `vmbench_demo_runtime.py`. Tools — `tools/mcp/`, `build_vmbench_baseline_snapshot.py`, `build_harder_search_split.py`, `run_verifier_granularity_ablation.py`, `explore_llm/capture_reasoning.py`.
-
-**Directories:** `datasets/mvp/` (+ `DATASET_CARD.md`), `training_data/`, `training_runs/`, `reports/` (gitignored), `fasm-handbook/` (reference).
-
-**Tests (what they lock):** `test_reference_vm.py` (VM); `test_vm_transition_verifier.py`, `test_verification_modes.py` (verifier); `test_dataset_pipeline.py`; `test_curriculum_gate.py`; `test_baseline_trainer.py`; `test_candidate_generator.py`; `test_branch_ranker.py`, `test_learned_branch_ranker.py`; `test_search_trace_export.py`; `test_sft_export.py`; `test_next2_*`, `test_collect_next2_diagnostics.py`; `test_*probe*.py`.
-
-**Planning docs (not executable):** `REPO_PRODUCT_MAP.md`, `VMBENCH_EXECUTION_PLAN.md`, `VMBENCH_SEARCH_ASSIST_PLAN.md`, `README.md`, `datasets/mvp/DATASET_CARD.md`.
-
-## Document map (technical report shape)
-
-This write-up follows a standard technical report layout. Use the table if you want **problem → method → benchmark → results → limits → reproducibility** in one glance:
-
-| Piece | Where |
-|-------|--------|
-| **Foundations** (origin + repo map, inlined) | Section above |
-| **Problem & goals** | §1 (motivation, contributions, scope) |
-| **Product surface & runtime UX** | §2.1–§2.2 |
-| **Method** (search, rank, verify, budget) | §3 |
-| **Benchmark** (ISA, VM, deterministic verifier, family splits, metrics) | §3.1–§3.2, §4.1, §4.3 |
-| **Results** | §5 |
-| **Calculability & document audit** | §5.5 |
-| **Limits & risk register** | §6 |
-| **Open empirical questions / exit criteria** | §7 |
-| **Reproducibility** | §4.4, §8, Appendix A |
-
-**Three headline items (additive summary, not a replacement for §1.2):** (1) small formal execution benchmark with **program-family splits** and a **deterministic** transition verifier; (2) **evidence** that **ranking + verification** under a fixed node budget beats **unranked** search on the reported tasks; (3) **inspectable MCP/CLI** packaging of the same loop.
+Operationally, the repository contributes four connected layers: a small deterministic ISA and reference VM; synthetic benchmark generation with program-family-level splits; a verifier-guided search stack built from candidate generation, ranking, and transition verification; and an inspectable runtime surface exposed through CLI and MCP interfaces. The sections that follow develop those layers in standard paper order.
 
 ---
 
@@ -240,31 +164,31 @@ The reference VM parses programs, executes them step-by-step, and produces canon
 
 ### 3.3 Candidate Generation
 
-Candidate generation converts one execution state into a small search frontier of plausible next instructions. In the current implementation, candidates are produced either from a strict local neighborhood around the instruction pointer or from a broader program scan, with duplicate instructions removed before ranking (`candidate_generator.py`). Each candidate carries its instruction text, a provisional rank, and a source label such as `current_ip`, `jump_target`, or `next_ip`, which makes later search behavior inspectable.
+Candidate generation maps a `(program_name, before_state_text)` pair to a small set of plausible next instructions. In the current implementation, candidates are produced either from a strict local neighborhood around the instruction pointer or from a broader program scan, with duplicate instruction texts removed before ranking (`candidate_generator.py`). In `strict_local`, the generator considers the current instruction at `IP`, branch targets and fallthroughs when applicable, and a small fixed neighborhood around the current pointer. In `program_global`, it scans the full instruction list and tags each candidate by source. Each candidate carries its instruction text, a provisional generation rank, and a source label such as `current_ip`, `jump_target`, or `next_ip`, which makes later search behavior inspectable.
 
-The input to this stage is the current VM context: program, instruction pointer, machine state, and any benchmark-side metadata needed to define the current step. The output is a compact candidate set that can be passed to the verifier and to the ranking policy. This stage is intentionally conservative: it does not try to solve the task on its own, but instead narrows the branching factor so that explicit verification and ranking can operate under a fixed compute budget.
+The input to this stage is the program identifier and the current serialized VM state. The output is a compact candidate set that can be passed to the verifier and to the ranking policy. This stage is intentionally conservative: it does not try to solve the task on its own, but instead narrows the branching factor so that explicit verification and ranking can operate under a fixed compute budget.
 
 Operationally, candidate generation separates “what might be worth trying” from “what is actually valid.” That separation matters for claim discipline. The model or heuristic is allowed to propose, but correctness is not awarded at proposal time.
 
 ### 3.4 Transition Verification
 
-Transition verification is the semantic core of the system. Given a program, an input state, and a candidate instruction, the verifier replays the step against the reference VM and returns both an execution result and a structured verdict, including mismatch notes such as `instruction_mismatch`, `target_mismatch`, or `state_diff_mismatch` (`reference_vm.py`, `vm_transition_verifier.py`). This keeps correctness outside the model: the model may propose or prioritize candidates, but acceptance is determined by the formal execution contract, not by fluent text generation.
+Transition verification is the semantic core of the system. Given `program_name`, an input state, and a candidate instruction, the verifier resolves the candidate against the program, executes exactly one VM instruction, and returns both an execution result and a structured verdict, including mismatch notes such as `instruction_mismatch`, `target_mismatch`, or `state_diff_mismatch` (`reference_vm.py`, `vm_transition_verifier.py`). This keeps correctness outside the model: the model may propose or prioritize candidates, but acceptance is determined by the formal execution contract, not by fluent text generation.
 
-The input to this stage is a candidate plus the current program state. The output is a semantic decision together with structured failure information that explains why the candidate failed. The verifier also supports multiple verdict modes, including exact intermediate-state matching and state-difference comparison, which makes verification granularity an explicit design variable rather than a hidden assumption.
+The input to this stage is a candidate plus the current program state. The output is a semantic decision together with structured failure information that explains why the candidate failed. The verifier also supports explicit verdict modes, including `intermediate_oracle`, `final_state_only`, `instruction_only`, and `state_diff`, which makes verification granularity an explicit design variable rather than a hidden assumption.
 
 This is also where vmbench differs most clearly from purely textual reasoning setups. The system is not rewarded for sounding right about the next step. It is rewarded only if the transition matches the formal semantics of the VM.
 
 ### 3.5 Ranking
 
-Ranking determines the order in which candidate instructions consume search budget. The system supports three policies: no ranker, a heuristic ranker, and a learned ranker trained on search traces; all three operate over the same candidate set and the same verifier-backed search loop (`branch_ranker.py`, `learned_branch_ranker.py`, `search_runner.py`). The role of ranking is not to replace verification, but to decide which candidates deserve verification first.
+Ranking determines the order in which candidate instructions consume search budget. The system supports three policies: no ranker, a heuristic ranker, and a learned ranker trained on labeled search-trace examples; all three operate over the same candidate set and the same verifier-backed search loop (`branch_ranker.py`, `learned_branch_ranker.py`, `search_runner.py`). The role of ranking is not to replace verification, but to decide which candidates deserve verification first.
 
-The input to ranking is the candidate set plus contextual features derived from the current execution state and search trace. The output is an ordered list of candidates. This separation is important for interpretation: ranking changes search efficiency and solve rate without changing the underlying semantics of the task.
+The input to ranking is the candidate set plus contextual features derived from the current execution state and candidate metadata. The heuristic ranker relies heavily on source priors such as `current_ip`, `jump_target`, and `jump_fallthrough`, then adjusts order using simple opcode and state cues. The learned ranker is a lightweight feature model over candidate source, opcode family, rank buckets, state shape, selected register overlap, program identity, and remaining-step context. The output is an ordered list of candidates. This separation is important for interpretation: ranking changes search efficiency and solve rate without changing the underlying semantics of the task.
 
 Empirically, this is one of the strongest signals in the project. The main benchmark lift comes not from eliminating the verifier, but from improving candidate order under a fixed budget. The learned component should therefore be read as an assist module inside an explicit search loop, not as a complete replacement for the formal machinery.
 
 ### 3.6 Budgeted Search Runtime
 
-The runtime composes candidate generation, ranking, and verification into a bounded search procedure over short execution horizons. For each record, the system generates first-step candidates, ranks them, verifies them one by one, and then repeats the same process for the next step if the current step is accepted (`search_runner.py`). The search stops as soon as it finds a verified path or exhausts the node budget, and it records the attempt history, explored-node count, and whether the budget was exhausted.
+The runtime composes candidate generation, ranking, and verification into a bounded depth-2 search procedure over `next_2_steps` records. For each record, the system generates first-step candidates from `S0`, ranks them, verifies them one by one, and then repeats the same process for the second step if the first step is accepted (`search_runner.py`). The search stops as soon as it finds a valid two-step path or exhausts the node budget, and it records the attempt history, explored-node count, successful path when found, and whether the budget was exhausted.
 
 The user-facing outputs follow directly from this design. A user can inspect the next-step choice, compare policies, solve one record under a fixed budget, and request a structured failure explanation. These surfaces are exposed through the CLI and MCP entry points described earlier, with product-facing wrappers in `vmbench_product_surface.py` and `vmbench_demo_runtime.py`.
 
@@ -272,9 +196,9 @@ This runtime framing is one of the main reasons vmbench is more than a benchmark
 
 ### 3.7 Training (Learned Ranker)
 
-The learned ranker is trained on trace-derived supervision from the benchmark. Training uses LoRA (no full fine-tune), a conservative profile (small sequence length, small batch size, gradient accumulation), and the same dataset/splits as the benchmark. Base model path and config are documented in the training README and freeze manifest. Training and eval results depend on dataset, splits, and compute; these are documented in the repo.
+The learned ranker in the current search stack is a trained feature-weight model rather than a neural runtime policy. Training accumulates counts over labeled search-trace examples, converts feature frequencies into smoothed log-odds-style weights, and stores the resulting model as JSON. At inference time, candidate scores are computed by summing the learned weights for active feature keys on top of a base-rate prior. This keeps the learned component lightweight and inspectable: the model can be audited as explicit feature weights instead of hidden activations.
 
-Training is a **supporting surface**, not the core claim. The repo freezes one conservative local LoRA path and one before/after eval scaffold so that learned ranking can be tested under bounded conditions. The paper’s central result is still about the benchmark, verifier, search loop, and ranking behavior under a fixed budget.
+Training is a **supporting surface**, not the core claim. The paper’s central result is still about the benchmark, verifier, search loop, and ranking behavior under a fixed budget.
 
 ---
 
@@ -440,41 +364,47 @@ The branch should be de-escalated or re-scoped if:
 
 ---
 
-## 8. Reproducibility
+## 8. Conclusion
 
-### 8.1 Code and Data
+vmbench is best understood as a benchmark-and-runtime result with a narrow empirical claim. On the current ISA, datasets, and reported splits, pure-neural multi-step execution is weak, while explicit verifier-guided search with ranking is strong and inspectable under bounded compute. The artifact contribution is the combination of a formal VM benchmark, a deterministic step verifier, a budgeted search loop, and an MCP/CLI runtime that exposes candidate choice, verification outcomes, budget use, and failure modes.
+
+The claim boundary remains important. These results do not establish latent symbolic execution in model weights, and they do not yet justify broad generalization claims beyond the current benchmark family. The next empirical gate is therefore straightforward: harder-split transfer, cleaner shortcut-dependence ablations, and more explicit verification-granularity studies should come before any stronger claim about general reasoning.
+
+## 9. Reproducibility
+
+### 9.1 Code and Data
 
 - **Code:** The repository contains the reference VM, dataset pipeline, baseline trainer, curriculum gate, SFT export, search/ranking pipeline, MCP server, and CLI. All are available in the repo.
 - **Data:** The MVP dataset (train/val/test splits by program family) is generated by the dataset pipeline; generation config, seed, and split strategy are in the dataset card. Regenerating with the same seed and config yields the same splits.
 - **Instructions:** README gives quickstart commands for generate, eval, gate, compare, export-sft, and status. Training README and configs describe how to run LoRA training and checkpoint eval.
 
-### 8.2 What Can Be Reproduced
+### 9.2 What Can Be Reproduced
 
 - Main experimental results: running the same pipeline (no ranker, heuristic, learned) on the same dataset and splits with the same node budget should yield the reported solve rates and node counts, up to environment and random seed. For learned ranker, training from the same config and data reproduces the reported ranker behavior.
 - A subset of experiments may depend on internal tooling or paths; where so, we state it. We aim to keep the main benchmark, eval, and MCP/CLI flows reproducible from the repo.
 
 ---
 
-## 9. Broader Impact
+## 10. Broader Impact
 
 This work is a benchmark and toolkit for measuring execution fidelity and inspectable reasoning. It is not tied to a specific deployment or application. Potential positive impact: better tools to evaluate and improve transparent, verifier-backed reasoning. We do not see a direct path to high-risk misuse from the benchmark or runtime alone; the main risk would be from downstream use of improved models in applications we do not control. We have not performed a formal broader-impact analysis beyond this.
 
 ---
 
-## 10. Ethics and Compliance
+## 11. Ethics and Compliance
 
 Research was conducted in line with responsible ML practice: we state limitations, avoid overclaiming, and provide reproducibility. No human subjects or crowdsourced data were used in the dataset; the data is synthetic. We have read and aligned with standard codes of ethics for research; no deviations.
 
 ---
 
-## 11. Licenses and Assets
+## 12. Licenses and Assets
 
-### 11.1 Existing Assets
+### 12.1 Existing Assets
 
 - We use open-source base models (e.g., Phi-3-mini) and tooling under their respective licenses. Users must comply with model and code licenses when reproducing or extending the work.
 - Any third-party code or data used in the repo is cited and used in accordance with its license; see repo and dataset card.
 
-### 11.2 Released Assets
+### 12.2 Released Assets
 
 - **Code:** Repository code is released under the license specified at the repository root (if none is specified, assume the same terms as the project).
 - **Dataset:** The AI-Assembly ISA v0 MVP dataset is synthetic, generated by the repo’s dataset pipeline. License: see repository root. If you use this dataset, cite the vmbench repository and the description of the AI-Assembly ISA and generation procedure (ISA_SPEC, dataset card).
@@ -482,7 +412,7 @@ Research was conducted in line with responsible ML practice: we state limitation
 
 ---
 
-## 12. Declaration on LLM Usage
+## 13. Declaration on LLM Usage
 
 LLMs were not used as an important, original, or non-standard component of the core methods (VM, verifier, search, ranking pipeline). If LLMs were used only for writing, editing, or formatting of documentation, that does not affect the scientific claims or reproducibility of the results.
 
@@ -490,7 +420,7 @@ LLMs were not used as an important, original, or non-standard component of the c
 
 ## References and Repository
 
-- **Origin and file layout** are fully inlined in **Foundations** above.
+- **Origin and file layout** are preserved in **Appendix B** below.
 - **Related concepts:** test-time scaling, verifier-guided search, verification granularity, speculative search; internal plans in text.md, VMBENCH_*_PLAN.md.
 
 ---
@@ -544,4 +474,69 @@ To reproduce: start the vmbench MCP server (e.g. `docker run --rm -i -v <repo>:/
 
 ---
 
-*This whitepaper summarizes the vmbench benchmark and inspectable reasoning runtime. Foundations inlines origin and repository map. §5.5 states calculability of reported numbers; §6–§7 state the main risks and next empirical gates. Claims are limited to §1.2, §5, and §6.*
+## Appendix B. Project Origins and Repository Map
+
+### B.1 Origin: idea line that led to vmbench
+
+Compressed narrative from the project’s origin discussion: the stack was imagined as evolving from **AI DSL -> full language** (analogy: COBOL/SQL/MATLAB/Verilog: domain -> DSL -> language). Today’s stack is a **layer cake** (Python + prompts + JSON + agents + YAML), not one abstraction level. A unified AI-native layer would natively combine **intent, tools, state, verification, execution**. Execution **inside** the model (Sudoku, in-context algorithms) suggests **latent programs** and neural interpretation, not the same as calling Python. Mechanistic interpretability analogies included registers in the residual stream, attention as routing, and behavior like **bytecode / opcodes**. Training through a **low-level VM** (registers, flags, memory, **step traces**) was proposed instead of Python-as-tool, because operational semantics need observable state transitions. **AI-Assembly**: minimal ISA and curriculum single_step -> multi-step trace -> latent -> synthesis. Honest outcome in this repo: a **full internal executor in weights is not established**; what ships is a **benchmark VM, traces, and verifier-guided search**.
+
+| Stage in the origin thread | Essence |
+|----------------------------|---------|
+| AI DSL -> full language | Domain -> DSL -> language; today = fragmented stack, not one language. |
+| What one language should carry | Intent, tools, state, **verification**, execution. |
+| In-model execution | Iterative state; latent program / neural interpreter hypothesis. |
+| Interpretability layer | Residual "registers", attention as micro-ops, opcode-like analogies. |
+| Why not Python as the teaching tool | Too high-level; need **stepwise state** for semantics. |
+| VM curriculum | single_step -> traces -> ... -> synthesis. |
+| Closing formulation | *Train LLMs in a low-level VM toward stable algorithms* - here, **external verifier + search** compensates where pure neural multi-step failed. |
+
+**Naive-Bayes-style topic masses (must sum to 1 for consistency):** P(AI language / in-model execution)=**0.41**; P(language design / declarativity)=**0.26**; P(interpretability / latent)=**0.17**; P(agents / tools)=**0.10**; P(Lisp / symbolic history)=**0.06**. **Check: 0.41+0.26+0.17+0.10+0.06 = 1.00.**
+
+**Intent masses (explicit fourth bucket so Sigma=1):** P(design new model)=**0.48**; P(architecture exploration)=**0.29**; P(implementation)=**0.15**; P(other / mixed)=**0.08**. **Check: 0.48+0.29+0.15+0.08 = 1.00.**
+
+**Research-potential scores (calculable mean):** novelty 7, science 8, practical 6, feasibility 7, publication 7 -> **(7+8+6+7+7)/5 = 7.0 / 10**, not "about 7". Lifting toward 9 needs provable internal step execution or clear reasoning-benchmark gain.
+
+How the origin maps to **this** codebase:
+
+| Origin idea | Where it lives in the repo |
+|-------------|----------------------------|
+| Minimal ISA, registers, flags, memory, traces | `ISA_SPEC.md`, `reference_vm.py` |
+| (state, instr) -> next state, traces | Dataset stages `single_step`, `next_2_steps`, `short_trace` via `dataset_pipeline.py` |
+| Verifiable low-level step | `vm_transition_verifier.py` |
+| Pure neural multi-step weak | Negative result on `next_2_steps`; `curriculum_gate.py`, README |
+| Deterministic semantics + test-time search | `search_runner.py`, rankers, MCP - verifier-guided search |
+
+One-line summary: from "COBOL for AI" and in-model Sudoku to **transparent VM + traces**; this repo is the **benchmark and measured outcome**. The strong story is **checkable transitions and budgeted search**, not a proof of latent CPU.
+
+### B.2 Repository map: entry points and layout
+
+**Entry points**
+
+| Goal | Path |
+|------|------|
+| CLI: generate, eval, gate, compare, status | `vmbench_cli.py` |
+| MCP server | `tools/mcp/vmbench_mcp_server.py`, `tools/mcp/README.md` |
+| ISA + VM | `ISA_SPEC.md`, `reference_vm.py` |
+| Generate benchmark JSONL | `dataset_pipeline.py` -> `datasets/mvp/` |
+| Local LLM eval -> summary.json | `baseline_trainer.py` (under `reports/`, often gitignored) |
+| Curriculum gates | `curriculum_gate.py` |
+| Budgeted search, solve rate | `search_runner.py` |
+| One-step correctness | `vm_transition_verifier.py` |
+| Search candidates | `candidate_generator.py` |
+| Ranking | `branch_ranker.py`, `learned_branch_ranker.py` |
+| LoRA | `training/train_lora.py` |
+| Checkpoint eval | `training/eval_checkpoint.py` |
+| Ranker train/eval | `training/train_search_ranker.py`, `training/eval_search_ranker.py` |
+| SFT export | `sft_export.py`, `training/export_sft.py` |
+
+**Layers:** VM - `ISA_SPEC.md`, `reference_vm.py`. Data gen - `dataset_pipeline.py` (MVP stages above), plus `synthesis_dataset.py`, `repair_dataset.py`, `latent_probe_dataset.py`, `ordered_conditionals_dataset.py`. Eval - `baseline_trainer.py`, `curriculum_gate.py`. Search-assist - `vm_transition_verifier.py`, `candidate_generator.py`, `branch_ranker.py`, `learned_branch_ranker.py`, `search_runner.py`, `search_trace_export.py`, `tools/build_search_benchmark.py`. Training folder - `train_lora.py`, `eval_checkpoint.py`, `eval_search_ranker.py`, `train_search_ranker.py`, `check_env.py`, `export_sft.py`, probe and `next2_*` scripts, `configs/*.json`. Product - `vmbench_product_surface.py`, `vmbench_demo_runtime.py`. Tools - `tools/mcp/`, `build_vmbench_baseline_snapshot.py`, `build_harder_search_split.py`, `run_verifier_granularity_ablation.py`, `explore_llm/capture_reasoning.py`.
+
+**Directories:** `datasets/mvp/` (+ `DATASET_CARD.md`), `training_data/`, `training_runs/`, `reports/` (gitignored), `fasm-handbook/` (reference).
+
+**Tests (what they lock):** `test_reference_vm.py` (VM); `test_vm_transition_verifier.py`, `test_verification_modes.py` (verifier); `test_dataset_pipeline.py`; `test_curriculum_gate.py`; `test_baseline_trainer.py`; `test_candidate_generator.py`; `test_branch_ranker.py`, `test_learned_branch_ranker.py`; `test_search_trace_export.py`; `test_sft_export.py`; `test_next2_*`, `test_collect_next2_diagnostics.py`; `test_*probe*.py`.
+
+**Planning docs (not executable):** `REPO_PRODUCT_MAP.md`, `VMBENCH_EXECUTION_PLAN.md`, `VMBENCH_SEARCH_ASSIST_PLAN.md`, `README.md`, `datasets/mvp/DATASET_CARD.md`.
+
+---
+
+*This whitepaper summarizes the vmbench benchmark and inspectable reasoning runtime. Appendix B preserves project origins and the repository map. §5.5 states calculability of reported numbers; §6–§7 state the main risks and next empirical gates. Claims are limited to §1.2, §5, and §6.*

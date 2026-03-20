@@ -3,6 +3,22 @@ name: product-smoke
 on:
   push:
     branches: [main]
+    paths:
+      - "vmbench_cli.py"
+      - "vmbench_product_surface.py"
+      - "vmbench_demo_runtime.py"
+      - "reference_vm.py"
+      - "dataset_pipeline.py"
+      - "candidate_generator.py"
+      - "branch_ranker.py"
+      - "learned_branch_ranker.py"
+      - "search_runner.py"
+      - "vm_transition_verifier.py"
+      - "curriculum_gate.py"
+      - "baseline_trainer.py"
+      - "sft_export.py"
+      - "tools/mcp/**"
+      - ".github/workflows/product-smoke.yml"
   pull_request:
 
 jobs:

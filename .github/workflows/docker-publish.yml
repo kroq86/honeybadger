@@ -3,6 +3,9 @@ name: docker-publish
 on:
   push:
     branches: [main]
+    paths:
+      - "tools/mcp/**"
+      - ".github/workflows/docker-publish.yml"
     tags:
       - "v*"
   workflow_dispatch:
