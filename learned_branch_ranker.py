@@ -32,6 +32,28 @@ def _opcode_family(opcode: str) -> str:
     return "other"
 
 
+def _control_role(opcode: str) -> str:
+    if opcode in {"JZ", "JNZ", "JL", "JLE", "JG", "JGE"}:
+        return "cond_branch"
+    if opcode == "JMP":
+        return "jump"
+    if opcode in {"CMP", "TEST"}:
+        return "compare"
+    if opcode == "MOV":
+        return "move"
+    if opcode in {"ADD", "SUB"}:
+        return "update"
+    if opcode in {"READ", "LOAD"}:
+        return "load"
+    if opcode in {"WRITE", "STORE"}:
+        return "store"
+    if opcode == "CONST":
+        return "const"
+    if opcode == "HALT":
+        return "terminal"
+    return "other"
+
+
 def _candidate_rank_bucket(rank: int) -> str:
     if rank <= 1:
         return "top1"
@@ -116,6 +138,7 @@ def _instruction_shape(instruction_text: str) -> dict[str, str]:
     joined = " ".join(args)
     return {
         "family": _opcode_family(opcode),
+        "control_role": _control_role(opcode),
         "arity": str(min(len(args), 3)),
         "has_input_ref": "1" if "input[" in joined else "0",
         "has_output_ref": "1" if "output[" in joined else "0",
@@ -135,6 +158,43 @@ def _branch_state_cues(before_state_text: str) -> dict[str, str]:
     }
 
 
+def _branch_behavior(opcode: str, before_state_text: str) -> str:
+    flags = _branch_state_cues(before_state_text)
+    z = flags["z"] == "1"
+    n = flags["n"] == "1"
+    if opcode == "JZ":
+        return "taken" if z else "not_taken"
+    if opcode == "JNZ":
+        return "taken" if not z else "not_taken"
+    if opcode == "JL":
+        return "taken" if n else "not_taken"
+    if opcode == "JGE":
+        return "taken" if not n else "not_taken"
+    if opcode in {"JLE", "JG", "JMP"}:
+        return "control"
+    return "na"
+
+
+def _register_value_relation(before_state_text: str, instruction_text: str) -> str:
+    state = parse_state_text(before_state_text)
+    args = _argument_tokens(instruction_text)
+    reg_tokens = [arg for arg in args if arg.startswith("R")]
+    if len(reg_tokens) < 2:
+        return "na"
+    try:
+        left = state.registers[int(reg_tokens[0][1:])]
+        right = state.registers[int(reg_tokens[1][1:])]
+    except (ValueError, IndexError):
+        return "na"
+    if left == right:
+        return "eq"
+    if left == 0 or right == 0:
+        return "one_zero"
+    if left < right:
+        return "lt"
+    return "gt"
+
+
 def candidate_feature_keys(
     *,
     program_name: str,
@@ -150,10 +210,13 @@ def candidate_feature_keys(
     source_token = candidate.source if include_candidate_source else "<src_hidden>"
     program_token = program_name if include_program_name else "<program_hidden>"
     register_signature = "|".join(_register_tokens(candidate.instruction_text)) or "<no_regs>"
+    instruction_shape = _instruction_shape(candidate.instruction_text)
     keys = [
         f"steps={remaining_steps}|source={source_token}|opcode={opcode}",
         f"source={source_token}|opcode={opcode}",
         f"opcode={opcode}",
+        f"control={instruction_shape['control_role']}",
+        f"source={source_token}|control={instruction_shape['control_role']}",
         f"source={source_token}",
         f"ip={state_ip}|opcode={opcode}",
         f"steps={remaining_steps}|opcode={opcode}|rank_bucket={_candidate_rank_bucket(candidate.rank)}",
@@ -161,25 +224,26 @@ def candidate_feature_keys(
         f"opcode={opcode}|regs={register_signature}",
         f"steps={remaining_steps}|opcode={opcode}|regs={register_signature}",
         f"opcode={opcode}|locality={_candidate_locality(candidate.rank, state_ip)}",
+        f"control={instruction_shape['control_role']}|locality={_candidate_locality(candidate.rank, state_ip)}",
     ]
     if include_structural_source_hints:
-        shape = _instruction_shape(candidate.instruction_text)
         keys.extend(
             [
-                f"opcode={opcode}|family={shape['family']}",
-                f"opcode={opcode}|family={shape['family']}|arity={shape['arity']}",
+                f"opcode={opcode}|family={instruction_shape['family']}",
+                f"opcode={opcode}|family={instruction_shape['family']}|arity={instruction_shape['arity']}",
                 f"opcode={opcode}|rank_delta={_rank_delta_bucket(candidate.rank, state_ip)}",
-                f"family={shape['family']}|rank_delta={_rank_delta_bucket(candidate.rank, state_ip)}",
-                f"opcode={opcode}|has_input_ref={shape['has_input_ref']}",
-                f"opcode={opcode}|has_output_ref={shape['has_output_ref']}",
-                f"opcode={opcode}|has_label={shape['has_label']}",
-                f"opcode={opcode}|has_immediate={shape['has_immediate']}",
-                f"opcode={opcode}|writes_register={shape['writes_register']}",
-                f"steps={remaining_steps}|family={shape['family']}|rank_bucket={_candidate_rank_bucket(candidate.rank)}",
+                f"family={instruction_shape['family']}|rank_delta={_rank_delta_bucket(candidate.rank, state_ip)}",
+                f"opcode={opcode}|has_input_ref={instruction_shape['has_input_ref']}",
+                f"opcode={opcode}|has_output_ref={instruction_shape['has_output_ref']}",
+                f"opcode={opcode}|has_label={instruction_shape['has_label']}",
+                f"opcode={opcode}|has_immediate={instruction_shape['has_immediate']}",
+                f"opcode={opcode}|writes_register={instruction_shape['writes_register']}",
+                f"steps={remaining_steps}|family={instruction_shape['family']}|rank_bucket={_candidate_rank_bucket(candidate.rank)}",
             ]
         )
     if before_state_text is not None:
         shape = _state_shape(before_state_text)
+        value_relation = _register_value_relation(before_state_text, candidate.instruction_text)
         keys.extend(
             [
                 f"opcode={opcode}|ip_bucket={shape['ip_bucket']}",
@@ -187,11 +251,23 @@ def candidate_feature_keys(
                 f"opcode={opcode}|touched_mem={shape['touched_mem']}",
                 f"opcode={opcode}|has_output={shape['has_output']}",
                 f"steps={remaining_steps}|opcode={opcode}|ip_bucket={shape['ip_bucket']}",
+                f"control={instruction_shape['control_role']}|ip_bucket={shape['ip_bucket']}",
+                f"control={instruction_shape['control_role']}|nonzero_regs={shape['nonzero_regs']}",
+                f"opcode={opcode}|value_relation={value_relation}",
+                f"control={instruction_shape['control_role']}|value_relation={value_relation}",
             ]
         )
+        if instruction_shape["control_role"] == "cond_branch":
+            branch_behavior = _branch_behavior(opcode, before_state_text)
+            keys.extend(
+                [
+                    f"opcode={opcode}|branch_behavior={branch_behavior}",
+                    f"source={source_token}|branch_behavior={branch_behavior}",
+                    f"control=cond_branch|branch_behavior={branch_behavior}|ip_bucket={shape['ip_bucket']}",
+                ]
+            )
         if include_structural_source_hints:
             overlap = _state_register_overlap(before_state_text, candidate.instruction_text)
-            instruction_shape = _instruction_shape(candidate.instruction_text)
             keys.extend(
                 [
                     f"opcode={opcode}|mentioned_regs={overlap['mentioned_regs']}",
@@ -225,6 +301,9 @@ def train_learned_ranker(
     include_program_name: bool = True,
     include_candidate_source: bool = True,
     include_structural_source_hints: bool = False,
+    rank_difficulty_weight: float = 0.0,
+    hard_negative_weight: float = 0.0,
+    late_step_weight: float = 0.0,
 ) -> dict[str, Any]:
     feature_counts: dict[str, list[float]] = defaultdict(lambda: [0.0, 0.0])
     total_positive = 0.0
@@ -241,16 +320,31 @@ def train_learned_ranker(
         ip_line = next(line for line in state_lines if line.startswith("IP="))
         state_ip = int(ip_line.split("=", 1)[1])
         chosen_instruction = row["completion"]
+        candidates_payload = metadata["candidates"]
+        chosen_rank = next(
+            (
+                payload.get("rank", index + 1)
+                for index, payload in enumerate(candidates_payload)
+                if payload["instruction_text"] == chosen_instruction
+            ),
+            1,
+        )
+        row_weight = 1.0 + rank_difficulty_weight * max(chosen_rank - 1, 0)
+        if metadata["remaining_steps"] == 1:
+            row_weight *= 1.0 + late_step_weight
 
-        for payload in metadata["candidates"]:
+        for index, payload in enumerate(candidates_payload):
             candidate = CandidateInstruction(
                 instruction_text=payload["instruction_text"],
                 source=payload["source"],
-                rank=payload.get("rank", 0),
+                rank=payload.get("rank", index + 1),
             )
             label = 1.0 if candidate.instruction_text == chosen_instruction else 0.0
-            total_positive += label
-            total_examples += 1.0
+            example_weight = row_weight
+            if label == 0.0 and candidate.rank < chosen_rank:
+                example_weight *= 1.0 + hard_negative_weight
+            total_positive += label * example_weight
+            total_examples += example_weight
             for key in candidate_feature_keys(
                 program_name=metadata["program_name"],
                 remaining_steps=metadata["remaining_steps"],
@@ -261,8 +355,8 @@ def train_learned_ranker(
                 before_state_text=before_state_text,
                 include_structural_source_hints=include_structural_source_hints,
             ):
-                feature_counts[key][0] += label
-                feature_counts[key][1] += 1.0
+                feature_counts[key][0] += label * example_weight
+                feature_counts[key][1] += example_weight
 
     base_rate = (total_positive + smoothing) / (total_examples + 2 * smoothing)
     weights: dict[str, float] = {}
@@ -281,6 +375,11 @@ def train_learned_ranker(
             "include_program_name": include_program_name,
             "include_candidate_source": include_candidate_source,
             "include_structural_source_hints": include_structural_source_hints,
+        },
+        "training_weights": {
+            "rank_difficulty_weight": rank_difficulty_weight,
+            "hard_negative_weight": hard_negative_weight,
+            "late_step_weight": late_step_weight,
         },
     }
 

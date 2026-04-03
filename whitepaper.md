@@ -8,7 +8,7 @@ April 2026
 
 ## Abstract
 
-We present `vmbench`, a formal virtual-machine execution benchmark and inspectable reasoning runtime for testing whether language models can follow machine-like semantics on synthetic execution tasks. The central empirical claim is narrow: on this benchmark, pure-neural multi-step execution is weak, while explicit verifier-guided search with ranking is strong and inspectable under bounded compute. The benchmark contributes a deterministic toy ISA (`AI-Assembly v0`), a reference VM, canonical traces, and family-level data splits designed to reduce leakage. The runtime contributes bounded candidate generation, deterministic transition verification, heuristic and learned ranking, and an interface that exposes candidate choice, verification outcomes, budget use, and failure modes. On the reported cohorts, ranking plus verification substantially improves solve rate over unranked search under the same node budget. These results are limited to the current benchmark family and do not establish broad generalization to other ISAs, longer horizons, or latent symbolic execution in model weights.
+We present `vmbench`, a formal virtual-machine execution benchmark and inspectable reasoning runtime for testing whether language models can follow machine-like semantics on synthetic execution tasks. The benchmark contributes a deterministic toy ISA (`AI-Assembly v0`), a reference VM, canonical traces, and family-level data splits designed to reduce leakage. The runtime contributes bounded candidate generation, deterministic transition verification, heuristic and learned ranking, and an interface that exposes candidate choice, verification outcomes, budget use, and failure modes. The central empirical claim is that, on this benchmark, explicit verifier-guided search is strong under bounded compute and that search order is the main determinant of low-budget performance. In the current reproducible workspace, heuristic ranking is the strongest overall policy, while a split-aware learned ranker trained on larger search traces and reweighted toward hard ordering cases closes much of the remaining gap: on a held-out `N = 217` test split it improves from `169/217` to `184/217` solved at node budget `2`, reaches `217/217` by budget `4`, and matches heuristic on a disjoint harder-start `N = 97` split at budget `2`. These results are limited to the current benchmark family and do not establish broad generalization to other ISAs, longer horizons, or latent symbolic execution in model weights.
 
 ## 1. Introduction
 
@@ -79,10 +79,11 @@ The learned component is a lightweight feature-weight model rather than a neural
 
 ### 4.1 Evaluation Cohorts
 
-- current checked-in `next_2_steps` held-out test cohort: `N = 12`
-- full harder-start `two_step_windows` slice built from `TASK_LIBRARY` with `window_start >= 2` and categories `branch`, `loop`, `search`: `N_harder = 224`
-- exported branch-ranking traces from the checked-in train split: `N_train_trace = 39` train rows and `N_val_trace = 5` validation rows
-- exported branch-ranking traces from the checked-in test split: `N_test_trace = 24` total rows after export, split internally into `16` train-bucket rows and `8` val-bucket rows by the trace exporter
+- checked-in MVP `next_2_steps` held-out test cohort: `N = 12`
+- rebuilt split-aware `two_step_windows` test split: `N_test_v2 = 217`
+- rebuilt harder-start `two_step_windows` test-only slice with `window_start >= 2` and categories `branch`, `loop`, `search`: `N_harder = 97`
+- exported branch-ranking traces from the split-aware training benchmark: `N_train_trace = 406`
+- exported branch-ranking traces from the split-aware held-out trace-eval bucket: `N_trace_eval = 39`
 
 ### 4.2 Metrics
 
@@ -93,96 +94,95 @@ The learned component is a lightweight feature-weight model rather than a neural
 
 ### 4.3 Reproducibility Notes
 
-The VM, transition verifier, and search loop are deterministic given fixed inputs. For the experiments added in this revision, budget sweeps were run with `candidate_mode=program_global`, `candidate_limit=32`, and `target_mode=intermediate_oracle`, which is the main setting in the current repo state where budget and ranking meaningfully separate policies. The learned ranker was trained from exported search traces generated from the checked-in train split. The repository contains the benchmark generator, verifier, search stack, CLI, MCP server, and tests. Main benchmark and runtime flows do not require specialized hardware; training-related paths may use a single GPU.
+The VM, transition verifier, and search loop are deterministic given fixed inputs. For the experiments added in this revision, budget sweeps were run with `candidate_mode=program_global`, `candidate_limit=32`, and `target_mode=intermediate_oracle`, which is the main setting in the current repo state where budget and ranking meaningfully separate policies. The strongest learned model in the current workspace is trained on a family-level train split of the rebuilt benchmark, with search traces exported from `seed-ranker=none`, `node_budget=64`, and a weighted objective that emphasizes late-ranked gold branches and hard negatives that appear before the gold candidate. The repository contains the benchmark generator, verifier, search stack, CLI, MCP server, and tests. Main benchmark and runtime flows do not require specialized hardware; training-related paths may use a single GPU.
 
 ## 5. Results
 
 All numbers below are from the stated benchmark cohorts and are not averaged over multiple random restarts unless explicitly stated.
 
-### 5.1 Held-Out Two-Step Test
+### 5.1 Main Empirical Takeaways
 
-Node budget: `12`. Cohort size: `N = 12`.
+- search order is the decisive variable at low budget; unranked search collapses quickly under the same verifier and candidate set
+- heuristic ranking is the strongest overall policy in the current reproducible workspace
+- the strongest learned policy is no longer the tiny trace-export baseline; a split-aware weighted model materially improves low-budget search and matches heuristic on the harder held-out split
+- relaxed verifier modes collapse policy differences, so `intermediate_oracle` is the meaningful setting for search comparisons
+- shortcut dependence remains real for learned ranking, but the learned path is now substantially stronger than the earlier draft suggested
 
-| Policy     | Solve rate | Avg nodes | Successes |
-|------------|------------|-----------|-----------|
-| No ranker  | 1.0000     | 3.00      | 12        |
-| Heuristic  | 1.0000     | 2.00      | 12        |
-| Learned    | 1.0000     | 4.00      | 12        |
+### 5.2 Low-Budget Held-Out Test
 
-At budget `12`, all three policies solve the current checked-in test set. The meaningful difference at this budget is efficiency rather than solve rate: heuristic ranking uses fewer nodes on average than either no ranking or the learned ranker trained from the current trace export.
-
-### 5.2 Budget Sweep
-
-The sharper comparison in the current repo state comes from low budgets. On the held-out `N = 12` test set with `candidate_mode=program_global` and `target_mode=intermediate_oracle`, budget `2` separates policies strongly.
+The main held-out evaluation in the current workspace uses the rebuilt split-aware `two_step_windows` test split with `N = 217`. This split is large enough to expose a meaningful budget curve rather than only a tiny-snapshot effect.
 
 | Node budget | No ranker solve rate | Heuristic solve rate | Learned solve rate |
 |------------|------------------------|----------------------|--------------------|
-| 2          | 0.0000                 | 1.0000               | 0.0000             |
-| 4          | 1.0000                 | 1.0000               | 1.0000             |
-| 8          | 1.0000                 | 1.0000               | 1.0000             |
-| 12         | 1.0000                 | 1.0000               | 1.0000             |
-| 16         | 1.0000                 | 1.0000               | 1.0000             |
+| 2          | `0/217 = 0.0000`       | `216/217 = 0.9954`   | `184/217 = 0.8479` |
+| 4          | `12/217 = 0.0553`      | `216/217 = 0.9954`   | `217/217 = 1.0000` |
+| 8          | `36/217 = 0.1659`      | `216/217 = 0.9954`   | `217/217 = 1.0000` |
+| 12         | `89/217 = 0.4101`      | `216/217 = 0.9954`   | `217/217 = 1.0000` |
 
-This sweep shows that the current held-out set is easy once the node budget reaches `4`, but it still captures a real low-budget effect: heuristic ordering solves every record at budget `2`, whereas no ranking and the current learned ranker exhaust budget on all `12/12` records.
+At budget `2`, ranking is the whole story. The same verifier and candidate set yield `0/217` solved without ranking, `216/217` with the heuristic ranker, and `184/217` with the strongest learned ranker. By budget `4`, the learned policy solves the full test split. This is a much stronger learned-search result than the earlier trace-export baseline, while still leaving the heuristic policy as the strongest overall low-budget policy.
 
-### 5.3 Held-Out Trace Ranking
+Node-efficiency also improves. The weighted learned model reaches `2.15` average explored nodes on solved full-budget runs, better than the earlier split-aware learned model (`2.29`) though still slightly worse than the heuristic (`2.05` at budget `12`).
 
-Cohort sizes for the exported trace-ranking eval are small in the current repo snapshot. The learned ranker trained from the checked-in train split reaches:
+### 5.3 Small MVP Snapshot
 
-- on the exported test train-bucket rows: Top-1 `9/16 = 0.5625`, Top-3 `9/16 = 0.5625`
-- on the exported test val-bucket rows: Top-1 `3/8 = 0.3750`, Top-3 `8/8 = 1.0000`
+For completeness, the checked-in MVP `next_2_steps` held-out set (`N = 12`) still shows the same qualitative low-budget separation. At budget `2`, heuristic solves `12/12`, while unranked search solves `0/12`. The rebuilt learned model is stronger than the earlier tiny-trace baseline, but the larger `N = 217` split is the more informative primary result in the current paper.
 
-### 5.4 Verification-Granularity Ablation
+### 5.4 Held-Out Trace Ranking
+
+On the split-aware held-out trace-eval bucket (`N = 39` gold rows), the strongest learned ranker reaches:
+
+- Top-1 `35/39 = 0.8974`
+- Top-3 `39/39 = 1.0000`
+
+These trace-ranking metrics are consistent with the search results: the learned model is strong enough to place the gold branch near the front almost always, but the residual Top-1 gap still matters in the most budget-constrained regime.
+
+### 5.5 Verification-Granularity Ablation
 
 We ran verifier-granularity ablations on the checked-in `N = 12` held-out test set over `instruction_only`, `state_diff`, `final_state_only`, and `intermediate_oracle`. At node budget `2`, all three non-oracle verification modes make the task trivially easy: every policy reaches solve rate `1.0000` with `2.0` average explored nodes. Under `intermediate_oracle`, however, the low-budget separation reappears: heuristic still solves `12/12`, while both no-ranker and learned solve `0/12`.
 
 This ablation shows that verification granularity is not a cosmetic implementation detail. On the current snapshot, relaxed verifier modes collapse the distinction between policies, whereas the strict intermediate-oracle setting preserves the bounded-search question the benchmark is intended to study.
 
-### 5.5 Harder-Start Transfer
+### 5.6 Harder-Start Transfer
 
-To test whether the search-order story survives beyond the tiny checked-in test split, we rebuilt the full two-step benchmark from `TASK_LIBRARY` and filtered it to the harder-start slice with `window_start >= 2` and categories `branch`, `loop`, and `search`. This yields `N_harder = 224` instances.
+To test whether the search-order story survives on a disjoint and harder cohort, we rebuilt the benchmark from `TASK_LIBRARY`, split it at the family level, and evaluated on the harder-start test-only slice with `window_start >= 2` and categories `branch`, `loop`, and `search`. This yields `N_harder = 97` instances.
 
-At node budget `12` with `candidate_mode=program_global` and `target_mode=intermediate_oracle`, the policies differ substantially:
+At node budget `2` with `candidate_mode=program_global` and `target_mode=intermediate_oracle`, the policies differ sharply:
 
 | Policy     | Solve rate | Avg nodes | Successes |
 |------------|------------|-----------|-----------|
-| No ranker  | 0.4464     | 10.86     | 100       |
-| Heuristic  | 0.9420     | 3.63      | 211       |
-| Learned    | 0.8482     | 7.91      | 190       |
+| No ranker  | `0/97 = 0.0000`   | 2.00 | 0  |
+| Heuristic  | `97/97 = 1.0000`  | 2.00 | 97 |
+| Learned    | `97/97 = 1.0000`  | 2.00 | 97 |
 
-This harder-start transfer restores a stronger version of the core claim. Search order matters substantially on this slice, and the heuristic ranker remains clearly stronger than no ranking. In the current reproducible workspace, however, the learned ranker does not match the heuristic on the harder split.
+This is the strongest learned-search result in the current workspace. On this disjoint harder-start slice, the learned model matches the heuristic exactly across the tested budgets `2/4/8/12`, while unranked search remains far behind. So the learned path is no longer just a mixed negative result: on the harder split it closes the gap completely.
 
-### 5.6 Reduced-Shortcut Candidate-Feature Ablations
+### 5.7 Reduced-Shortcut Candidate-Feature Ablations
 
 We trained additional learned rankers with candidate-source shortcuts removed. Two variants were tested: `no_source` and `structural_no_source`, where structural source hints are reintroduced without the raw candidate-source feature.
 
-On the checked-in `N = 12` test set, both ablated models still solve all records by budget `8`, but both are worse than the original learned ranker in node efficiency:
+On the harder-start split at budget `12`, shortcut removal still degrades performance materially:
 
-- `no_source`: solve rate `1.0000` at budget `8`, average explored nodes `6.08`
-- `structural_no_source`: solve rate `1.0000` at budget `8`, average explored nodes `6.50`
-- original learned model: solve rate `1.0000` at budget `8`, average explored nodes `4.00`
+- strongest learned model: `97/97 = 1.0000`
+- `no_source`: `91/97 = 0.9381`
+- structural source hints without raw source: `97/97 = 1.0000`, but with worse node efficiency than the strongest learned model
 
-On the harder-start `N_harder = 224` split at budget `12`, shortcut removal causes a large drop:
+So shortcut dependence remains empirically real. Removing raw candidate-source information hurts low-budget search, and the structural replacement only partially recovers the efficiency gap. This should be read as a result rather than merely a caveat: the benchmark is sensitive enough to expose which parts of the ranking signal matter.
 
-- original learned model: `190/224 = 0.8482`
-- `no_source`: `96/224 = 0.4286`
-- `structural_no_source`: `98/224 = 0.4375`
+### 5.8 Interpretation
 
-So in the current workspace, shortcut dependence is empirically real: removing candidate-source information roughly halves harder-split solve rate, and the structural replacement does not recover the lost performance.
+The strongest signal in the current reproducible workspace is now cleaner than in the earlier draft. Search order matters strongly under bounded compute; the heuristic ranker is a strong baseline; and the learned ranker is no longer merely a weak imitation of heuristic traces. A split-aware training setup plus weighted supervision on hard ordering cases substantially improves learned low-budget performance and yields parity with heuristic on the harder disjoint split.
 
-### 5.7 Interpretation
+At the same time, the learned policy is not yet uniformly dominant. On the main held-out `N = 217` split at node budget `2`, heuristic still leads `216/217` to `184/217`. The remaining failures are highly concentrated rather than diffuse, which suggests that the current learned model is close but not yet a full replacement for the hand-designed policy.
 
-The strongest signal in the current reproducible workspace is narrower than the earlier draft version of this paper. Search order still matters, but the current checked-in held-out set only exposes that difference at the smallest tested budget. In that low-budget regime, heuristic ranking is clearly useful. The current learned ranker is mixed: it does not match the heuristic on this small setup, and its trace-ranking metrics indicate that it is not yet a robust replacement for the hand-designed ordering policy.
+### 5.9 Failure Taxonomy
 
-### 5.8 Failure Taxonomy
+We ran explicit failure analysis at node budget `2` on the rebuilt `N = 217` held-out split. The resulting taxonomy remains simple but more informative than in the tiny-snapshot draft:
 
-We ran explicit failure analysis at node budget `2`, the only regime in the current checked-in test set where failures occur. The resulting taxonomy is simple but informative:
+- no ranker: `217/217` unsolved, all `budget_or_rank_order`
+- heuristic: `216/217` solved
+- strongest learned model: `184/217` solved, with the remaining `33` failures all `budget_or_rank_order`
 
-- no ranker: `12/12` failures classified as `budget_or_rank_order`
-- heuristic: `12/12` records solved
-- learned: `12/12` failures classified as `budget_or_rank_order`
-
-In other words, failures on this test set are not currently caused by missing first-step candidates or verifier rejection of the gold path. They are caused by candidate ordering under a tight budget. The learned ranker is slightly worse than the heuristic on this analysis: for representative failures, the best second-step candidate appears at rank `3` under the learned policy rather than rank `2` under the no-ranker baseline, increasing the minimum nodes needed from `3` to `4`.
+In other words, the remaining learned failures are not caused by missing candidates or verifier rejection of the gold path. They are caused by ordering under a tight budget. Moreover, the residual gap is highly concentrated: all `33` remaining low-budget learned failures come from `fib_iterative_5`, and all require only one additional verification step beyond the budget-`2` limit (`min_nodes_needed = 3`). This is a much sharper and more actionable failure picture than in the earlier draft.
 
 ## 6. Limitations
 
@@ -200,9 +200,9 @@ The most important next experiments are:
 
 - longer-horizon transfer with a search runtime that is not restricted to two-step search;
 - broader multi-seed reporting for the learned-ranker path;
-- stronger structural replacements for candidate-source shortcuts that preserve harder-split quality.
+- stronger low-leakage ranking objectives that close the remaining budget-`2` gap without sacrificing broader split performance.
 
-The budget sweep, failure-taxonomy pass, verification-granularity ablation, harder-start transfer, and reduced-shortcut ablations are now implemented and reported for the current reproducible workspace. The remaining empirical gates are therefore the ones above.
+The budget sweep, failure-taxonomy pass, verification-granularity ablation, harder-start transfer, split-aware learned-ranker retraining, and weighted low-budget objective are now implemented and reported for the current reproducible workspace. The remaining empirical gates are therefore the ones above.
 
 ## 8. Reproducibility and Artifact Availability
 

@@ -72,6 +72,7 @@ def _decision_record(
     search_id: str,
     depth: int,
     search_params: dict[str, Any],
+    split_name: str,
 ) -> dict[str, Any]:
     prompt = _build_prompt(
         program_name=record["program_name"],
@@ -87,9 +88,11 @@ def _decision_record(
         "metadata": {
             "dataset_type": "search_trace_branch_ranking",
             "trace_kind": trace_kind,
-            "split": _split_for_search_id(f"{search_id}:depth:{depth}"),
+            "split": split_name,
             "search_id": search_id,
             "program_name": record["program_name"],
+            "split_family": record.get("split_family"),
+            "category": record.get("category"),
             "case_index": record.get("case_index"),
             "window_start": record.get("window_start"),
             "depth": depth,
@@ -114,6 +117,7 @@ def build_search_trace_records(
     ranker: str,
     target_mode: str,
     node_budget: int | None,
+    split_name: str | None = None,
 ) -> list[dict[str, Any]]:
     rows = load_jsonl(dataset_path)
     exported: list[dict[str, Any]] = []
@@ -122,6 +126,7 @@ def build_search_trace_records(
         sections = _section_map(record["prompt"])
         target_sections = _section_map(record["target"])
         search_id = f"{record['program_name']}:{record.get('case_index', 'na')}:{record.get('window_start', 'na')}"
+        record_split = split_name or record.get("split") or _split_for_search_id(search_id)
         search_params = {
             "candidate_limit": candidate_limit,
             "candidate_mode": candidate_mode,
@@ -229,6 +234,7 @@ def build_search_trace_records(
                 search_id=search_id,
                 depth=2,
                 search_params=search_params,
+                split_name=record_split,
             )
 
             if local_outcome == "solved":
@@ -254,6 +260,7 @@ def build_search_trace_records(
                 search_id=search_id,
                 depth=1,
                 search_params=search_params,
+                split_name=record_split,
             )
         )
         if second_export is not None:
@@ -271,6 +278,7 @@ def export_search_trace_splits(
     ranker: str,
     target_mode: str,
     node_budget: int | None,
+    split_name: str | None = None,
 ) -> dict[str, Any]:
     rows = build_search_trace_records(
         dataset_path,
@@ -279,6 +287,7 @@ def export_search_trace_splits(
         ranker=ranker,
         target_mode=target_mode,
         node_budget=node_budget,
+        split_name=split_name,
     )
     splits = {"train": [], "val": [], "test": []}
     for row in rows:
@@ -302,6 +311,7 @@ def export_search_trace_splits(
             "ranker": ranker,
             "target_mode": target_mode,
             "node_budget": node_budget,
+            "split_name": split_name,
         },
         "label_summary": {
             split: {

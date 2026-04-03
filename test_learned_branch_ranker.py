@@ -5,7 +5,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from test_paths import repo_path
 from candidate_generator import CandidateInstruction
 from learned_branch_ranker import (
     load_learned_ranker,
@@ -13,24 +12,34 @@ from learned_branch_ranker import (
     save_learned_ranker,
     train_learned_ranker,
 )
+from search_trace_export import build_search_trace_records
+from tools.build_search_benchmark import build_two_step_windows
 
 
-def _read_jsonl(path: Path) -> list[dict]:
-    rows: list[dict] = []
-    with path.open("r", encoding="utf-8") as handle:
-        for line in handle:
-            line = line.strip()
-            if line:
-                rows.append(json.loads(line))
-    return rows
+def _write_jsonl(path: Path, rows: list[dict]) -> None:
+    with path.open("w", encoding="utf-8") as handle:
+        for row in rows:
+            handle.write(json.dumps(row, ensure_ascii=True) + "\n")
+
+
+def _sample_records() -> list[dict]:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        dataset_path = Path(tmpdir) / "benchmark.jsonl"
+        _write_jsonl(dataset_path, build_two_step_windows()[:8])
+        return build_search_trace_records(
+            dataset_path,
+            candidate_limit=8,
+            candidate_mode="program_global",
+            ranker="heuristic",
+            target_mode="intermediate_oracle",
+            node_budget=8,
+            split_name="train",
+        )
 
 
 class LearnedBranchRankerTests(unittest.TestCase):
     def test_train_and_save_model(self) -> None:
-        records = _read_jsonl(
-            repo_path("training_data", "search_traces_heuristic_v1", "train.jsonl")
-        )[:50]
-        model = train_learned_ranker(records)
+        model = train_learned_ranker(_sample_records())
         self.assertEqual(model["format"], "learned_branch_ranker_v1")
         self.assertGreater(model["trained_examples"], 0)
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -40,10 +49,7 @@ class LearnedBranchRankerTests(unittest.TestCase):
             self.assertEqual(reloaded["format"], "learned_branch_ranker_v1")
 
     def test_rank_candidates_with_model_prefers_seen_pattern(self) -> None:
-        records = _read_jsonl(
-            repo_path("training_data", "search_traces_heuristic_v1", "train.jsonl")
-        )[:100]
-        model = train_learned_ranker(records)
+        model = train_learned_ranker(_sample_records())
         candidates = [
             CandidateInstruction("READ R1, input[0]", 1, "current_ip"),
             CandidateInstruction("ADD R3, R1, R2", 2, "next2_ip"),
@@ -68,11 +74,8 @@ class LearnedBranchRankerTests(unittest.TestCase):
         self.assertEqual(ranked[0].instruction_text, "READ R1, input[0]")
 
     def test_train_model_supports_feature_ablation_flags(self) -> None:
-        records = _read_jsonl(
-            repo_path("training_data", "search_traces_heuristic_v1", "train.jsonl")
-        )[:50]
         model = train_learned_ranker(
-            records,
+            _sample_records(),
             include_program_name=False,
             include_candidate_source=False,
         )
@@ -80,18 +83,13 @@ class LearnedBranchRankerTests(unittest.TestCase):
         self.assertFalse(model["feature_flags"]["include_candidate_source"])
 
     def test_train_model_supports_structural_source_hints(self) -> None:
-        records = _read_jsonl(
-            repo_path("training_data", "search_traces_heuristic_v1", "train.jsonl")
-        )[:50]
         model = train_learned_ranker(
-            records,
+            _sample_records(),
             include_program_name=False,
             include_candidate_source=False,
             include_structural_source_hints=True,
         )
-        self.assertTrue(
-            model["feature_flags"]["include_structural_source_hints"]
-        )
+        self.assertTrue(model["feature_flags"]["include_structural_source_hints"])
 
 
 if __name__ == "__main__":

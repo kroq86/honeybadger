@@ -23,6 +23,8 @@ def build_two_step_windows() -> list[dict[str, object]]:
                     {
                         "dataset_type": "next_2_steps_search_benchmark",
                         "program_name": task.program_name,
+                        "split_family": task.split_family,
+                        "category": task.category,
                         "case_index": case_index,
                         "input_values": input_values,
                         "window_start": window_start,
