@@ -79,9 +79,10 @@ The learned component is a lightweight feature-weight model rather than a neural
 
 ### 4.1 Evaluation Cohorts
 
-- `two_step_windows` held-out test cohort: `N = 31`
-- harder split (`window_start >= 2`, filtered branch/loop/search slice): `N_harder = 224`
-- held-out trace-ranking evaluation: `N_trace = 66`
+- current checked-in `next_2_steps` held-out test cohort: `N = 12`
+- full harder-start `two_step_windows` slice built from `TASK_LIBRARY` with `window_start >= 2` and categories `branch`, `loop`, `search`: `N_harder = 224`
+- exported branch-ranking traces from the checked-in train split: `N_train_trace = 39` train rows and `N_val_trace = 5` validation rows
+- exported branch-ranking traces from the checked-in test split: `N_test_trace = 24` total rows after export, split internally into `16` train-bucket rows and `8` val-bucket rows by the trace exporter
 
 ### 4.2 Metrics
 
@@ -92,7 +93,7 @@ The learned component is a lightweight feature-weight model rather than a neural
 
 ### 4.3 Reproducibility Notes
 
-The VM, transition verifier, and search loop are deterministic given fixed inputs. The learned ranker remains subject to training-stack and hardware details. The repository contains the benchmark generator, verifier, search stack, CLI, MCP server, and tests. Main benchmark and runtime flows do not require specialized hardware; training-related paths may use a single GPU.
+The VM, transition verifier, and search loop are deterministic given fixed inputs. For the experiments added in this revision, budget sweeps were run with `candidate_mode=program_global`, `candidate_limit=32`, and `target_mode=intermediate_oracle`, which is the main setting in the current repo state where budget and ranking meaningfully separate policies. The learned ranker was trained from exported search traces generated from the checked-in train split. The repository contains the benchmark generator, verifier, search stack, CLI, MCP server, and tests. Main benchmark and runtime flows do not require specialized hardware; training-related paths may use a single GPU.
 
 ## 5. Results
 
@@ -100,37 +101,88 @@ All numbers below are from the stated benchmark cohorts and are not averaged ove
 
 ### 5.1 Held-Out Two-Step Test
 
-Node budget: `12`. Cohort size: `N = 31`.
+Node budget: `12`. Cohort size: `N = 12`.
 
 | Policy     | Solve rate | Avg nodes | Successes |
 |------------|------------|-----------|-----------|
-| No ranker  | 0.3548     | 9.55      | 11        |
-| Heuristic  | 0.9677     | 2.84      | 30        |
-| Learned    | 0.9677     | 2.39      | 30        |
+| No ranker  | 1.0000     | 3.00      | 12        |
+| Heuristic  | 1.0000     | 2.00      | 12        |
+| Learned    | 1.0000     | 4.00      | 12        |
 
-The main effect is large: explicit ranking dramatically improves solve rate over unranked search under the same budget, and the learned ranker uses fewer nodes on average than the heuristic ranker on this cohort.
+At budget `12`, all three policies solve the current checked-in test set. The meaningful difference at this budget is efficiency rather than solve rate: heuristic ranking uses fewer nodes on average than either no ranking or the learned ranker trained from the current trace export.
 
-### 5.2 Harder Split
+### 5.2 Budget Sweep
 
-Cohort size: `N_harder = 224`.
+The sharper comparison in the current repo state comes from low budgets. On the held-out `N = 12` test set with `candidate_mode=program_global` and `target_mode=intermediate_oracle`, budget `2` separates policies strongly.
 
-| Policy     | Solve rate | Successes |
-|------------|------------|-----------|
-| Heuristic  | 0.9420     | 211       |
-| Learned    | 0.9911     | 222       |
+| Node budget | No ranker solve rate | Heuristic solve rate | Learned solve rate |
+|------------|------------------------|----------------------|--------------------|
+| 2          | 0.0000                 | 1.0000               | 0.0000             |
+| 4          | 1.0000                 | 1.0000               | 1.0000             |
+| 8          | 1.0000                 | 1.0000               | 1.0000             |
+| 12         | 1.0000                 | 1.0000               | 1.0000             |
+| 16         | 1.0000                 | 1.0000               | 1.0000             |
 
-On this filtered harder slice, the learned ranker slightly outperforms the heuristic ranker.
+This sweep shows that the current held-out set is easy once the node budget reaches `4`, but it still captures a real low-budget effect: heuristic ordering solves every record at budget `2`, whereas no ranking and the current learned ranker exhaust budget on all `12/12` records.
 
 ### 5.3 Held-Out Trace Ranking
 
-Cohort size: `N_trace = 66`.
+Cohort sizes for the exported trace-ranking eval are small in the current repo snapshot. The learned ranker trained from the checked-in train split reaches:
 
-- Top-1: `64/66 = 0.9697`
-- Top-3: `65/66 = 0.9848`
+- on the exported test train-bucket rows: Top-1 `9/16 = 0.5625`, Top-3 `9/16 = 0.5625`
+- on the exported test val-bucket rows: Top-1 `3/8 = 0.3750`, Top-3 `8/8 = 1.0000`
 
-### 5.4 Interpretation
+### 5.4 Verification-Granularity Ablation
 
-The strongest signal in the current results is that search order matters more than one-shot next-step prediction quality. Moving from no ranking to heuristic or learned ranking yields a large gain, while keeping the verifier fixed. The learned ranker appears most useful when budget is tight and on the harder slice. These findings support an interpretation centered on verifier-guided search efficiency rather than latent internal execution.
+We ran verifier-granularity ablations on the checked-in `N = 12` held-out test set over `instruction_only`, `state_diff`, `final_state_only`, and `intermediate_oracle`. At node budget `2`, all three non-oracle verification modes make the task trivially easy: every policy reaches solve rate `1.0000` with `2.0` average explored nodes. Under `intermediate_oracle`, however, the low-budget separation reappears: heuristic still solves `12/12`, while both no-ranker and learned solve `0/12`.
+
+This ablation shows that verification granularity is not a cosmetic implementation detail. On the current snapshot, relaxed verifier modes collapse the distinction between policies, whereas the strict intermediate-oracle setting preserves the bounded-search question the benchmark is intended to study.
+
+### 5.5 Harder-Start Transfer
+
+To test whether the search-order story survives beyond the tiny checked-in test split, we rebuilt the full two-step benchmark from `TASK_LIBRARY` and filtered it to the harder-start slice with `window_start >= 2` and categories `branch`, `loop`, and `search`. This yields `N_harder = 224` instances.
+
+At node budget `12` with `candidate_mode=program_global` and `target_mode=intermediate_oracle`, the policies differ substantially:
+
+| Policy     | Solve rate | Avg nodes | Successes |
+|------------|------------|-----------|-----------|
+| No ranker  | 0.4464     | 10.86     | 100       |
+| Heuristic  | 0.9420     | 3.63      | 211       |
+| Learned    | 0.8482     | 7.91      | 190       |
+
+This harder-start transfer restores a stronger version of the core claim. Search order matters substantially on this slice, and the heuristic ranker remains clearly stronger than no ranking. In the current reproducible workspace, however, the learned ranker does not match the heuristic on the harder split.
+
+### 5.6 Reduced-Shortcut Candidate-Feature Ablations
+
+We trained additional learned rankers with candidate-source shortcuts removed. Two variants were tested: `no_source` and `structural_no_source`, where structural source hints are reintroduced without the raw candidate-source feature.
+
+On the checked-in `N = 12` test set, both ablated models still solve all records by budget `8`, but both are worse than the original learned ranker in node efficiency:
+
+- `no_source`: solve rate `1.0000` at budget `8`, average explored nodes `6.08`
+- `structural_no_source`: solve rate `1.0000` at budget `8`, average explored nodes `6.50`
+- original learned model: solve rate `1.0000` at budget `8`, average explored nodes `4.00`
+
+On the harder-start `N_harder = 224` split at budget `12`, shortcut removal causes a large drop:
+
+- original learned model: `190/224 = 0.8482`
+- `no_source`: `96/224 = 0.4286`
+- `structural_no_source`: `98/224 = 0.4375`
+
+So in the current workspace, shortcut dependence is empirically real: removing candidate-source information roughly halves harder-split solve rate, and the structural replacement does not recover the lost performance.
+
+### 5.7 Interpretation
+
+The strongest signal in the current reproducible workspace is narrower than the earlier draft version of this paper. Search order still matters, but the current checked-in held-out set only exposes that difference at the smallest tested budget. In that low-budget regime, heuristic ranking is clearly useful. The current learned ranker is mixed: it does not match the heuristic on this small setup, and its trace-ranking metrics indicate that it is not yet a robust replacement for the hand-designed ordering policy.
+
+### 5.8 Failure Taxonomy
+
+We ran explicit failure analysis at node budget `2`, the only regime in the current checked-in test set where failures occur. The resulting taxonomy is simple but informative:
+
+- no ranker: `12/12` failures classified as `budget_or_rank_order`
+- heuristic: `12/12` records solved
+- learned: `12/12` failures classified as `budget_or_rank_order`
+
+In other words, failures on this test set are not currently caused by missing first-step candidates or verifier rejection of the gold path. They are caused by candidate ordering under a tight budget. The learned ranker is slightly worse than the heuristic on this analysis: for representative failures, the best second-step candidate appears at rank `3` under the learned policy rather than rank `2` under the no-ranker baseline, increasing the minimum nodes needed from `3` to `4`.
 
 ## 6. Limitations
 
@@ -140,23 +192,21 @@ The scope of the claims is narrow.
 - Results are limited to the current benchmark family and short-horizon settings.
 - The verifier is a critical dependency; bugs in the verifier would invalidate conclusions.
 - The learned ranker benefits from structural cues such as candidate source, which weakens claims about low-leakage generalization.
-- The current report does not include broader multi-seed variance, longer-horizon transfer, or full verification-granularity ablations.
+- The current report does not include broader multi-seed variance or a longer-horizon search runtime beyond two-step search.
 
 ## 7. Future Work
 
 The most important next experiments are:
 
-- budget sweeps across multiple node limits;
-- explicit failure-taxonomy analysis;
-- verification-granularity ablations;
-- transfer tests on harder start states and longer horizons;
-- reduced-shortcut settings for candidate features.
+- longer-horizon transfer with a search runtime that is not restricted to two-step search;
+- broader multi-seed reporting for the learned-ranker path;
+- stronger structural replacements for candidate-source shortcuts that preserve harder-split quality.
 
-These are the right empirical gates before making any broader claim about general reasoning or generalization across execution domains.
+The budget sweep, failure-taxonomy pass, verification-granularity ablation, harder-start transfer, and reduced-shortcut ablations are now implemented and reported for the current reproducible workspace. The remaining empirical gates are therefore the ones above.
 
 ## 8. Reproducibility and Artifact Availability
 
-The repository contains the reference VM, ISA specification, dataset generator, search stack, rankers, CLI, MCP server, and tests. The MVP dataset is synthetic and can be regenerated from the provided pipeline using the documented seed and split policy. The artifact is therefore intended to be reproducible at the level of benchmark generation, verifier behavior, ranking evaluation, and runtime inspection.
+The repository contains the reference VM, ISA specification, dataset generator, search stack, rankers, CLI, MCP server, and tests. The MVP dataset is synthetic and can be regenerated from the provided pipeline using the documented seed and split policy. The artifact is therefore intended to be reproducible at the level of benchmark generation, verifier behavior, ranking evaluation, and runtime inspection. In particular, the current repo includes dedicated scripts for budget sweeps, failure analysis, and verifier-granularity ablations over the `next_2_steps` benchmark.
 
 ## 9. Broader Impact
 

@@ -14,6 +14,8 @@ events.jsonl
 .vmbench_mcp_selftest/
 .vmbench_mcp_proof/
 .cursor/
+traces/
+reports/experiments/
 
 # Generated reports and experiment artifacts
 reports/**
